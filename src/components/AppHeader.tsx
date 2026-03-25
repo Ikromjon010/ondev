@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { LayoutDashboard, BookOpen, Code2, GraduationCap } from "lucide-react";
 
 const navItems = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/syllabus", label: "Syllabus", icon: BookOpen },
   { to: "/lesson/2", label: "Current Lesson", icon: Code2 },
 ];
@@ -18,7 +18,7 @@ const AppHeader = () => {
             <GraduationCap className="w-5 h-5 text-primary-foreground" />
           </div>
           <span className="font-bold text-lg text-foreground">
-            Py<span className="text-primary">Forge</span>
+            on<span className="text-primary">dev</span>.uz
           </span>
         </Link>
         <nav className="flex items-center gap-1">
