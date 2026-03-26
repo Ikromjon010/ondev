@@ -17,19 +17,19 @@ const GamificationSidebar = () => {
           </div>
           <div>
             <h3 className="font-semibold text-foreground">{currentUser.name}</h3>
-            <p className="text-sm text-muted-foreground">Python Learner</p>
+            <p className="text-sm text-muted-foreground">Python o'rganuvchi</p>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-secondary rounded-lg p-3 text-center">
             <Star className="w-4 h-4 text-warning mx-auto mb-1" />
             <p className="text-lg font-bold text-foreground">{currentUser.points}</p>
-            <p className="text-xs text-muted-foreground">Points</p>
+            <p className="text-xs text-muted-foreground">Ballar</p>
           </div>
           <div className="bg-secondary rounded-lg p-3 text-center">
             <Flame className="w-4 h-4 text-destructive mx-auto mb-1" />
             <p className="text-lg font-bold text-foreground">{currentUser.streak}</p>
-            <p className="text-xs text-muted-foreground">Day Streak</p>
+            <p className="text-xs text-muted-foreground">Kunlik faollik</p>
           </div>
         </div>
       </motion.div>
@@ -43,7 +43,7 @@ const GamificationSidebar = () => {
       >
         <div className="flex items-center gap-2 mb-4">
           <Trophy className="w-5 h-5 text-warning" />
-          <h3 className="font-semibold text-foreground">Leaderboard</h3>
+          <h3 className="font-semibold text-foreground">Peshqadamlar reytingi</h3>
         </div>
         <div className="space-y-2">
           {leaderboard.map((user) => (

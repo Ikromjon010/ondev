@@ -16,7 +16,7 @@ const Register = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Account created! Redirecting to dashboard...");
+    toast.success("Hisob yaratildi! Yo'naltirilmoqda...");
   };
 
   return (
@@ -33,8 +33,8 @@ const Register = () => {
 
         <Card className="glass-card">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Create your account</CardTitle>
-            <CardDescription>Start your backend development journey today</CardDescription>
+            <CardTitle className="text-2xl">Hisob yarating</CardTitle>
+            <CardDescription>Bugun backend dasturlash sayohatingizni boshlang</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
@@ -49,13 +49,13 @@ const Register = () => {
 
             <div className="flex items-center gap-3">
               <Separator className="flex-1" />
-              <span className="text-xs text-muted-foreground">or</span>
+              <span className="text-xs text-muted-foreground">yoki</span>
               <Separator className="flex-1" />
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="name">To'liq ism</Label>
                 <Input
                   id="name"
                   placeholder="Sardor Rakhimov"
@@ -64,7 +64,7 @@ const Register = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
+                <Label htmlFor="phone">Telefon raqam</Label>
                 <Input
                   id="phone"
                   placeholder="+998 90 123 45 67"
@@ -73,7 +73,7 @@ const Register = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Parol</Label>
                 <div className="relative">
                   <Input
                     id="password"
@@ -91,13 +91,13 @@ const Register = () => {
                   </button>
                 </div>
               </div>
-              <Button type="submit" className="w-full">Create Account</Button>
+              <Button type="submit" className="w-full">Hisob yaratish</Button>
             </form>
 
             <p className="text-center text-sm text-muted-foreground">
-              Already have an account?{" "}
+              Hisobingiz bormi?{" "}
               <Link to="/login" className="text-primary hover:underline font-medium">
-                Log in
+                Kirish
               </Link>
             </p>
           </CardContent>

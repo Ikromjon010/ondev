@@ -18,44 +18,44 @@ import { Button } from "@/components/ui/button";
 const features = [
   {
     icon: Laptop,
-    title: "Browser-based IDE",
-    desc: "Write and run Python code directly in your browser with our Monaco-powered editor.",
+    title: "Brauzerda IDE",
+    desc: "Monaco muharririga asoslangan brauzer ichida Python kodlarni yozing va ishga tushiring.",
   },
   {
     icon: FolderGit2,
-    title: "Real-world Projects",
-    desc: "Build 3 production-grade projects: To-Do App, E-commerce, and Real-time Chat.",
+    title: "Amaliy loyihalar",
+    desc: "3 ta haqiqiy loyiha yarating: To-Do Ilova, E-commerce va Real-time Chat.",
   },
   {
     icon: Gamepad2,
-    title: "Gamified Learning",
-    desc: "Earn points, maintain streaks, and climb the leaderboard as you learn.",
+    title: "O'yinlashtirilgan ta'lim",
+    desc: "Ball to'plang, kunlik faollikni saqlang va o'rganish jarayonida reyting ko'taring.",
   },
   {
     icon: Trophy,
-    title: "Leaderboard & Badges",
-    desc: "Compete with peers and earn achievement badges for completing challenges.",
+    title: "Reyting va yutuqlar",
+    desc: "Boshqa o'quvchilar bilan raqobatlashing va vazifalarni bajarganda yutuq nishonlari oling.",
   },
 ];
 
 const pricingTiers = [
   {
-    name: "Basic",
-    months: "Months 1–2",
-    price: "Free Start",
+    name: "Boshlang'ich",
+    months: "1–2 oylar",
+    price: "Bepul",
     isFree: true,
     lessons: 24,
-    project: "CLI To-Do App",
+    project: "CLI To-Do Ilova",
     features: [
-      "Python Fundamentals",
-      "24 interactive lessons",
-      "Browser-based IDE",
-      "Community access",
+      "Python asoslari",
+      "24 ta interaktiv dars",
+      "Brauzerda IDE",
+      "Jamiyatga kirish",
     ],
   },
   {
-    name: "Intermediate",
-    months: "Months 3–6",
+    name: "O'rta",
+    months: "3–6 oylar",
     price: "699,000 UZS",
     isFree: false,
     popular: true,
@@ -63,25 +63,25 @@ const pricingTiers = [
     project: "E-commerce Backend",
     features: [
       "Django & REST Framework",
-      "48 interactive lessons",
-      "E-commerce project",
-      "DevOps & Docker basics",
-      "Priority support",
+      "48 ta interaktiv dars",
+      "E-commerce loyiha",
+      "DevOps & Docker asoslari",
+      "Ustuvor qo'llab-quvvatlash",
     ],
   },
   {
-    name: "Advanced",
-    months: "Months 7–9",
+    name: "Yuqori",
+    months: "7–9 oylar",
     price: "499,000 UZS",
     isFree: false,
     lessons: 36,
-    project: "Real-time Chat App",
+    project: "Real-time Chat Ilova",
     features: [
       "WebSockets & Channels",
-      "36 interactive lessons",
-      "Real-time Chat project",
-      "Cloud deployment",
-      "Certificate of Completion",
+      "36 ta interaktiv dars",
+      "Real-time Chat loyiha",
+      "Bulutga joylashtirish",
+      "Yakuniy sertifikat",
     ],
   },
 ];
@@ -111,10 +111,10 @@ const Index = () => {
           </Link>
           <nav className="flex items-center gap-2">
             <Button variant="ghost" size="sm" asChild>
-              <Link to="/login">Log in</Link>
+              <Link to="/login">Kirish</Link>
             </Button>
             <Button size="sm" asChild>
-              <Link to="/register">Sign Up</Link>
+              <Link to="/register">Ro'yxatdan o'tish</Link>
             </Button>
           </nav>
         </div>
@@ -131,26 +131,24 @@ const Index = () => {
             className="max-w-3xl mx-auto text-center"
           >
             <span className="inline-block px-3 py-1 mb-6 rounded-full text-xs font-semibold bg-primary/15 text-primary border border-primary/20">
-              🚀 Start coding for free — no credit card required
+              🚀 Bepul boshlang — karta talab qilinmaydi
             </span>
             <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-6">
-              Become a{" "}
+              9 oyda{" "}
               <span className="text-primary">Python & Django</span>{" "}
-              Backend Engineer in{" "}
-              <span className="text-accent">9 Months</span>
+              Backend Muhandis bo'ling
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
-              Master backend development with 108 interactive lessons, 3 real-world
-              projects, and a gamified learning experience — all from your browser.
+              108 ta interaktiv dars, 3 ta amaliy loyiha va o'yinlashtirilgan ta'lim tajribasi bilan backend dasturlashni o'rganing — hammasi brauzeringizda.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button size="lg" className="text-base gap-2" asChild>
                 <Link to="/register">
-                  Start Coding for Free <ArrowRight className="w-4 h-4" />
+                  Bepul boshlash <ArrowRight className="w-4 h-4" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="text-base" asChild>
-                <Link to="/syllabus">View Curriculum</Link>
+                <Link to="/syllabus">Kurs dasturini ko'rish</Link>
               </Button>
             </div>
           </motion.div>
@@ -161,9 +159,9 @@ const Index = () => {
       <section className="py-20 border-t border-border">
         <div className="container px-4">
           <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold mb-3">Why learn on ondev.uz?</h2>
+            <h2 className="text-3xl font-bold mb-3">Nima uchun ondev.uz da o'rganish kerak?</h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              Everything you need to go from zero to a professional backend developer.
+              Noldan professional backend dasturchigacha bo'lish uchun kerak bo'lgan hamma narsa.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
@@ -192,9 +190,9 @@ const Index = () => {
       <section className="py-20 border-t border-border">
         <div className="container px-4">
           <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold mb-3">Simple, transparent pricing</h2>
+            <h2 className="text-3xl font-bold mb-3">Oddiy va shaffof narxlar</h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              Start free and upgrade as you progress. Pay only for the tiers you need.
+              Bepul boshlang va rivojlanish darajangizga qarab yangilang. Faqat kerakli bosqich uchun to'lang.
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
@@ -212,24 +210,22 @@ const Index = () => {
               >
                 {tier.popular && (
                   <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">
-                    Most Popular
+                    Eng mashhur
                   </span>
                 )}
                 <div className="mb-4">
-                  <span
-                    className={`tier-badge-${tier.name.toLowerCase() === "intermediate" ? "intermediate" : tier.name.toLowerCase() === "advanced" ? "advanced" : "basic"}`}
-                  >
+                  <span className="text-sm font-semibold text-foreground">
                     {tier.name}
                   </span>
                   <p className="text-xs text-muted-foreground mt-1">{tier.months}</p>
                 </div>
                 <div className="mb-4">
                   <span className="text-2xl font-bold">
-                    {tier.isFree ? "Free" : tier.price}
+                    {tier.isFree ? "Bepul" : tier.price}
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground mb-2">
-                  {tier.lessons} lessons · Project: {tier.project}
+                  {tier.lessons} ta dars · Loyiha: {tier.project}
                 </p>
                 <ul className="flex-1 space-y-2 mb-6">
                   {tier.features.map((f) => (
@@ -245,7 +241,7 @@ const Index = () => {
                   asChild
                 >
                   <Link to={tier.isFree ? "/register" : `/checkout/${tier.name.toLowerCase()}`}>
-                    {tier.isFree ? "Get Started Free" : "Buy Now"}
+                    {tier.isFree ? "Bepul boshlash" : "Sotib olish"}
                   </Link>
                 </Button>
               </motion.div>
@@ -267,9 +263,9 @@ const Index = () => {
               </span>
             </div>
             <div className="flex gap-6 text-sm text-muted-foreground">
-              <Link to="/syllabus" className="hover:text-foreground transition-colors">Curriculum</Link>
+              <Link to="/syllabus" className="hover:text-foreground transition-colors">Kurs dasturi</Link>
               <a href="#" className="hover:text-foreground transition-colors">Blog</a>
-              <a href="#" className="hover:text-foreground transition-colors">Contact</a>
+              <a href="#" className="hover:text-foreground transition-colors">Aloqa</a>
             </div>
             <div className="flex gap-3 text-muted-foreground">
               <a href="#" className="hover:text-foreground transition-colors"><Github className="w-5 h-5" /></a>
@@ -278,7 +274,7 @@ const Index = () => {
             </div>
           </div>
           <p className="text-center text-xs text-muted-foreground mt-6">
-            © 2026 ondev.uz. All rights reserved.
+            © 2026 ondev.uz. Barcha huquqlar himoyalangan.
           </p>
         </div>
       </footer>

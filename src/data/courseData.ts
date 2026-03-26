@@ -51,7 +51,7 @@ export const leaderboard: LeaderboardUser[] = [
 const makeLessons = (start: number, count: number, unlockedUpTo: number): Lesson[] =>
   Array.from({ length: count }, (_, i) => ({
     id: start + i,
-    title: lessonTitles[start + i - 1] || `Lesson ${start + i}`,
+    title: lessonTitles[start + i - 1] || `${start + i}-dars`,
     duration: `${12 + Math.floor(Math.random() * 20)}min`,
     completed: start + i <= unlockedUpTo - 1,
     unlocked: start + i <= unlockedUpTo,
@@ -59,159 +59,159 @@ const makeLessons = (start: number, count: number, unlockedUpTo: number): Lesson
 
 const lessonTitles = [
   // Month 1 (1-12)
-  "Python Setup & Environment", "Variables & Data Types", "Strings & String Methods",
-  "Numbers & Math Operations", "Lists & Tuples", "Dictionaries & Sets",
-  "Conditionals (if/elif/else)", "For & While Loops", "Functions Basics",
-  "Function Arguments & Returns", "File I/O Operations", "Error Handling (try/except)",
+  "Python o'rnatish va muhit sozlash", "O'zgaruvchilar va ma'lumot turlari", "Satrlar va satr metodlari",
+  "Sonlar va matematik amallar", "Ro'yxatlar va kortejlar", "Lug'atlar va to'plamlar",
+  "Shartli operatorlar (if/elif/else)", "For va While tsikllari", "Funksiyalar asoslari",
+  "Funksiya argumentlari va qaytarish", "Fayllar bilan ishlash", "Xatoliklarni boshqarish (try/except)",
   // Month 2 (13-24)
-  "Modules & Packages", "List Comprehensions", "Lambda Functions",
-  "Map, Filter, Reduce", "Object-Oriented Programming", "Classes & Objects",
-  "Inheritance & Polymorphism", "Decorators", "Generators & Iterators",
-  "Regular Expressions", "Working with JSON", "Python Project: CLI To-Do App",
+  "Modullar va paketlar", "Ro'yxat abstraktsiyalari", "Lambda funksiyalar",
+  "Map, Filter, Reduce", "Obyektga yo'naltirilgan dasturlash", "Klasslar va obyektlar",
+  "Meros va polimorfizm", "Dekoratorlar", "Generatorlar va iteratorlar",
+  "Regulyar ifodalar", "JSON bilan ishlash", "Python loyiha: CLI To-Do Ilova",
   // Month 3 (25-36)
-  "Intro to Web Development", "HTTP & REST Fundamentals", "Django Installation & Setup",
-  "Django Project Structure", "URL Routing & Views", "Django Templates Basics",
-  "Template Inheritance", "Static Files & Media", "Django Models & ORM",
-  "Database Migrations", "Django Admin Panel", "CRUD Operations",
+  "Veb dasturlash kirishi", "HTTP & REST asoslari", "Django o'rnatish va sozlash",
+  "Django loyiha tuzilmasi", "URL marshrutlash va ko'rinishlar", "Django shablonlar asoslari",
+  "Shablon merosligi", "Statik fayllar va media", "Django modellari va ORM",
+  "Ma'lumotlar bazasi migratsiyalari", "Django admin paneli", "CRUD amallari",
   // Month 4 (37-48)
-  "Django Forms", "Form Validation", "Class-Based Views", "Authentication System",
-  "User Registration", "Login & Logout", "Permissions & Groups",
-  "Django REST Framework Intro", "Serializers", "API Views & ViewSets",
-  "API Authentication", "Project: E-commerce Backend",
+  "Django formalar", "Forma validatsiyasi", "Klassga asoslangan ko'rinishlar", "Autentifikatsiya tizimi",
+  "Foydalanuvchi ro'yxatdan o'tishi", "Kirish va chiqish", "Ruxsatlar va guruhlar",
+  "Django REST Framework kirishi", "Serializatorlar", "API ko'rinishlari va ViewSetlar",
+  "API autentifikatsiyasi", "Loyiha: E-commerce Backend",
   // Month 5 (49-60)
-  "E-commerce: Product Models", "E-commerce: Cart Logic", "E-commerce: Order System",
-  "E-commerce: Payment Integration", "E-commerce: Search & Filters",
-  "E-commerce: Reviews & Ratings", "E-commerce: Admin Dashboard",
-  "E-commerce: API Endpoints", "E-commerce: Testing Basics",
-  "E-commerce: Unit Tests", "E-commerce: Integration Tests", "E-commerce: Deployment Prep",
+  "E-commerce: Mahsulot modellari", "E-commerce: Savat mantiqiy qismi", "E-commerce: Buyurtma tizimi",
+  "E-commerce: To'lov integratsiyasi", "E-commerce: Qidiruv va filtrlar",
+  "E-commerce: Sharhlar va baholar", "E-commerce: Admin paneli",
+  "E-commerce: API endpointlari", "E-commerce: Testlash asoslari",
+  "E-commerce: Unit testlar", "E-commerce: Integratsiya testlari", "E-commerce: Deploy tayyorlash",
   // Month 6 (61-72)
-  "PostgreSQL Deep Dive", "Database Optimization", "Query Performance",
-  "Caching with Redis", "Celery Task Queue", "Background Jobs",
-  "Email Notifications", "File Upload & S3", "Docker Basics",
-  "Docker Compose for Django", "CI/CD Pipeline Basics", "E-commerce Final Project Review",
+  "PostgreSQL chuqur o'rganish", "Ma'lumotlar bazasi optimizatsiyasi", "So'rovlar samaradorligi",
+  "Redis bilan keshlash", "Celery vazifalar navbati", "Fon vazifalari",
+  "Email xabarnomalar", "Fayl yuklash va S3", "Docker asoslari",
+  "Docker Compose Django uchun", "CI/CD asoslari", "E-commerce yakuniy loyiha ko'rigi",
   // Month 7 (73-84)
-  "WebSocket Fundamentals", "Django Channels Setup", "ASGI vs WSGI",
-  "Real-time Chat: Models", "Real-time Chat: Consumers", "Real-time Chat: Routing",
-  "Chat UI with JavaScript", "Group Chat Implementation", "Online Status Tracking",
-  "Message Read Receipts", "File Sharing in Chat", "Chat Notifications",
+  "WebSocket asoslari", "Django Channels sozlash", "ASGI va WSGI farqi",
+  "Real-time Chat: Modellar", "Real-time Chat: Consumerlar", "Real-time Chat: Marshrutlash",
+  "Chat UI JavaScript bilan", "Guruh chat amalga oshirish", "Onlayn holat kuzatish",
+  "Xabar o'qildi belgilari", "Chatda fayl almashish", "Chat xabarnomalar",
   // Month 8 (85-96)
-  "Advanced Django Patterns", "Custom Middleware", "Signal Handlers",
-  "Multi-tenancy Basics", "API Rate Limiting", "GraphQL with Django",
-  "Microservices Architecture", "Service Communication", "Event-Driven Design",
-  "Monitoring & Logging", "Performance Profiling", "Security Best Practices",
+  "Django ilg'or patternlar", "Maxsus Middleware", "Signal ishlov beruvchilari",
+  "Ko'p ijarachi asoslari", "API tezlik cheklash", "Django bilan GraphQL",
+  "Mikroservislar arxitekturasi", "Servislar aloqasi", "Hodisalarga asoslangan dizayn",
+  "Monitoring va loglash", "Samaradorlik profillash", "Xavfsizlik eng yaxshi amaliyotlari",
   // Month 9 (97-108)
-  "AWS/Cloud Deployment", "Nginx & Gunicorn", "SSL & Domain Setup",
-  "Kubernetes Basics", "Scaling Strategies", "Database Replication",
-  "Final Project Planning", "Final Project Development", "Code Review & Refactoring",
-  "Testing & QA", "Production Deployment", "Course Graduation & Next Steps",
+  "AWS/Bulut joylashtirish", "Nginx & Gunicorn", "SSL & Domen sozlash",
+  "Kubernetes asoslari", "Masshtablash strategiyalari", "Ma'lumotlar bazasi replikatsiyasi",
+  "Yakuniy loyiha rejalashtirish", "Yakuniy loyiha ishlab chiqish", "Kod ko'rigi va qayta ishlash",
+  "Testlash va QA", "Productionga joylashtirish", "Kurs bitirish va keyingi qadamlar",
 ];
 
 export const tiers: Tier[] = [
   {
-    name: "Basic",
-    months: "Months 1-2",
+    name: "Boshlang'ich",
+    months: "1-2 oylar",
     badge: "basic",
     totalLessons: 24,
     modules: [
-      { id: 1, month: 1, title: "Python Fundamentals", lessons: makeLessons(1, 12, 19) },
-      { id: 2, month: 2, title: "Advanced Python Basics", lessons: makeLessons(13, 12, 19) },
+      { id: 1, month: 1, title: "Python asoslari", lessons: makeLessons(1, 12, 19) },
+      { id: 2, month: 2, title: "Kengaytirilgan Python asoslari", lessons: makeLessons(13, 12, 19) },
     ],
   },
   {
-    name: "Intermediate",
-    months: "Months 3-6",
+    name: "O'rta",
+    months: "3-6 oylar",
     badge: "intermediate",
     totalLessons: 48,
     modules: [
-      { id: 3, month: 3, title: "Django Foundations", lessons: makeLessons(25, 12, 19) },
-      { id: 4, month: 4, title: "Django REST & Auth", lessons: makeLessons(37, 12, 19) },
-      { id: 5, month: 5, title: "E-commerce Project", lessons: makeLessons(49, 12, 19) },
-      { id: 6, month: 6, title: "DevOps & Optimization", lessons: makeLessons(61, 12, 19) },
+      { id: 3, month: 3, title: "Django asoslari", lessons: makeLessons(25, 12, 19) },
+      { id: 4, month: 4, title: "Django REST & Autentifikatsiya", lessons: makeLessons(37, 12, 19) },
+      { id: 5, month: 5, title: "E-commerce loyiha", lessons: makeLessons(49, 12, 19) },
+      { id: 6, month: 6, title: "DevOps & Optimizatsiya", lessons: makeLessons(61, 12, 19) },
     ],
   },
   {
-    name: "Advanced",
-    months: "Months 7-9",
+    name: "Yuqori",
+    months: "7-9 oylar",
     badge: "advanced",
     totalLessons: 36,
     modules: [
-      { id: 7, month: 7, title: "Real-time Chat Project", lessons: makeLessons(73, 12, 19) },
-      { id: 8, month: 8, title: "Advanced Patterns", lessons: makeLessons(85, 12, 19) },
-      { id: 9, month: 9, title: "Deployment & Graduation", lessons: makeLessons(97, 12, 19) },
+      { id: 7, month: 7, title: "Real-time Chat loyiha", lessons: makeLessons(73, 12, 19) },
+      { id: 8, month: 8, title: "Ilg'or patternlar", lessons: makeLessons(85, 12, 19) },
+      { id: 9, month: 9, title: "Joylashtirish va bitirish", lessons: makeLessons(97, 12, 19) },
     ],
   },
 ];
 
 export const sampleLessonContent = `
-## Variables & Data Types in Python
+## Pythonda o'zgaruvchilar va ma'lumot turlari
 
-Python is a **dynamically typed** language, meaning you don't need to declare variable types explicitly.
+Python **dinamik tiplangan** til bo'lib, o'zgaruvchi turlarini aniq e'lon qilish shart emas.
 
-### Basic Data Types
+### Asosiy ma'lumot turlari
 
-| Type | Example | Description |
+| Tur | Misol | Tavsif |
 |------|---------|-------------|
-| \`int\` | \`42\` | Integer numbers |
-| \`float\` | \`3.14\` | Floating-point numbers |
-| \`str\` | \`"hello"\` | Text strings |
-| \`bool\` | \`True\` | Boolean values |
+| \`int\` | \`42\` | Butun sonlar |
+| \`float\` | \`3.14\` | O'nlik kasrli sonlar |
+| \`str\` | \`"salom"\` | Matnli satrlar |
+| \`bool\` | \`True\` | Mantiqiy qiymatlar |
 
-### Variable Assignment
+### O'zgaruvchilarga qiymat berish
 
 \`\`\`python
-# Simple variable assignment
-name = "Django Developer"
+# Oddiy qiymat berish
+name = "Django Dasturchi"
 age = 25
 is_student = True
 gpa = 3.8
 
-# Multiple assignment
+# Ko'p o'zgaruvchiga qiymat berish
 x, y, z = 1, 2, 3
 
-# Type checking
+# Turni tekshirish
 print(type(name))   # <class 'str'>
 print(type(age))    # <class 'int'>
 \`\`\`
 
-### Type Conversion
+### Turni o'zgartirish
 
 \`\`\`python
-# Converting between types
+# Turlar o'rtasida o'zgartirish
 num_str = "42"
-num_int = int(num_str)    # String to Integer
-num_float = float(num_str) # String to Float
+num_int = int(num_str)    # Satrdan butun songa
+num_float = float(num_str) # Satrdan o'nlik songa
 
-# Be careful with invalid conversions!
+# Noto'g'ri o'zgartirishga ehtiyot bo'ling!
 try:
-    invalid = int("hello")  # This will raise ValueError
+    invalid = int("salom")  # Bu ValueError chiqaradi
 except ValueError as e:
-    print(f"Error: {e}")
+    print(f"Xato: {e}")
 \`\`\`
 
-> 💡 **Pro Tip:** Always use meaningful variable names. \`user_age\` is better than \`x\`.
+> 💡 **Maslahat:** Har doim tushunarli o'zgaruvchi nomlari ishlating. \`user_age\` \`x\` dan yaxshiroqdir.
 
-### Practice Task
+### Amaliy topshiriq
 
-Write a program that:
-1. Creates variables for a student's name, age, and GPA
-2. Prints a formatted string with all the information
-3. Converts the GPA to a percentage (multiply by 25)
+Dastur yozing:
+1. Talabaning ismi, yoshi va GPA uchun o'zgaruvchilar yarating
+2. Barcha ma'lumotlarni formatlangan satr sifatida chiqaring
+3. GPA ni foizga aylantiring (25 ga ko'paytiring)
 `;
 
-export const sampleCode = `# Variables & Data Types Practice
-# Complete the code below
+export const sampleCode = \`# O'zgaruvchilar va ma'lumot turlari amaliyoti
+# Quyidagi kodni to'ldiring
 
-# 1. Create variables for a student
+# 1. Talaba uchun o'zgaruvchilar yarating
 student_name = "Ali"
 student_age = 20
 student_gpa = 3.6
 
-# 2. Print formatted information
-print(f"Student: {student_name}")
-print(f"Age: {student_age}")
+# 2. Formatlangan ma'lumotni chiqaring
+print(f"Talaba: {student_name}")
+print(f"Yoshi: {student_age}")
 print(f"GPA: {student_gpa}")
 
-# 3. Convert GPA to percentage
+# 3. GPA ni foizga aylantiring
 percentage = student_gpa * 25
-print(f"Percentage: {percentage}%")
-`;
+print(f"Foiz: {percentage}%")
+\`;

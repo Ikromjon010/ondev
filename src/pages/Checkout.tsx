@@ -8,31 +8,31 @@ import { toast } from "sonner";
 
 const tierData: Record<string, { name: string; price: string; months: string; lessons: number; project: string; features: string[] }> = {
   intermediate: {
-    name: "Intermediate Tier",
+    name: "O'rta bosqich",
     price: "699,000 UZS",
-    months: "Months 3–6",
+    months: "3–6 oylar",
     lessons: 48,
     project: "E-commerce Backend",
     features: [
       "Django & REST Framework",
-      "48 interactive lessons",
-      "E-commerce project",
-      "DevOps & Docker basics",
-      "Priority support",
+      "48 ta interaktiv dars",
+      "E-commerce loyiha",
+      "DevOps & Docker asoslari",
+      "Ustuvor qo'llab-quvvatlash",
     ],
   },
   advanced: {
-    name: "Advanced Tier",
+    name: "Yuqori bosqich",
     price: "499,000 UZS",
-    months: "Months 7–9",
+    months: "7–9 oylar",
     lessons: 36,
-    project: "Real-time Chat App",
+    project: "Real-time Chat Ilova",
     features: [
       "WebSockets & Channels",
-      "36 interactive lessons",
-      "Real-time Chat project",
-      "Cloud deployment",
-      "Certificate of Completion",
+      "36 ta interaktiv dars",
+      "Real-time Chat loyiha",
+      "Bulutga joylashtirish",
+      "Yakuniy sertifikat",
     ],
   },
 };
@@ -51,10 +51,10 @@ const Checkout = () => {
 
   const handlePurchase = () => {
     if (!selectedMethod) {
-      toast.error("Please select a payment method");
+      toast.error("Iltimos, to'lov usulini tanlang");
       return;
     }
-    toast.success("Payment successful! Course unlocked.");
+    toast.success("To'lov muvaffaqiyatli! Kurs ochildi.");
   };
 
   return (
@@ -72,14 +72,14 @@ const Checkout = () => {
           </Link>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <ShieldCheck className="w-4 h-4 text-primary" />
-            Secure Checkout
+            Xavfsiz to'lov
           </div>
         </div>
       </header>
 
       <div className="container px-4 py-10">
         <Button variant="ghost" size="sm" className="mb-6 gap-1" asChild>
-          <Link to="/syllabus"><ArrowLeft className="w-4 h-4" /> Back to Syllabus</Link>
+          <Link to="/syllabus"><ArrowLeft className="w-4 h-4" /> Kurs dasturiga qaytish</Link>
         </Button>
 
         <div className="grid lg:grid-cols-5 gap-8 max-w-5xl mx-auto">
@@ -87,16 +87,16 @@ const Checkout = () => {
           <div className="lg:col-span-3">
             <Card className="glass-card">
               <CardHeader>
-                <CardTitle>Order Summary</CardTitle>
+                <CardTitle>Buyurtma tafsilotlari</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
                   <h3 className="font-semibold text-lg">{data.name}</h3>
-                  <p className="text-sm text-muted-foreground">{data.months} · {data.lessons} lessons</p>
+                  <p className="text-sm text-muted-foreground">{data.months} · {data.lessons} ta dars</p>
                 </div>
                 <Separator />
                 <div>
-                  <p className="text-sm font-medium mb-2">What's included:</p>
+                  <p className="text-sm font-medium mb-2">Tarkibiga kiradi:</p>
                   <ul className="space-y-1.5">
                     {data.features.map((f) => (
                       <li key={f} className="flex items-center gap-2 text-sm text-secondary-foreground">
@@ -107,12 +107,12 @@ const Checkout = () => {
                 </div>
                 <Separator />
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Capstone Project</p>
+                  <p className="text-sm text-muted-foreground mb-1">Yakuniy loyiha</p>
                   <p className="font-medium">{data.project}</p>
                 </div>
                 <Separator />
                 <div className="flex items-center justify-between">
-                  <span className="text-lg font-semibold">Total</span>
+                  <span className="text-lg font-semibold">Jami</span>
                   <span className="text-2xl font-bold text-primary">{data.price}</span>
                 </div>
               </CardContent>
@@ -123,7 +123,7 @@ const Checkout = () => {
           <div className="lg:col-span-2">
             <Card className="glass-card">
               <CardHeader>
-                <CardTitle>Payment Method</CardTitle>
+                <CardTitle>To'lov usuli</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {paymentMethods.map((m) => (
@@ -146,10 +146,10 @@ const Checkout = () => {
                   </button>
                 ))}
                 <Button className="w-full mt-4" size="lg" onClick={handlePurchase}>
-                  Complete Purchase
+                  Xaridni yakunlash
                 </Button>
                 <p className="text-xs text-center text-muted-foreground mt-2">
-                  By purchasing you agree to our Terms of Service
+                  Xarid qilish orqali siz foydalanish shartlariga rozilik bildirasiz
                 </p>
               </CardContent>
             </Card>

@@ -27,7 +27,7 @@ const LessonView = () => {
     setRunning(true);
     setTimeout(() => {
       setOutput(
-        `Student: Ali\nAge: 20\nGPA: 3.6\nPercentage: 90.0%\n\n✓ All test cases passed!`
+        `Student: Ali\nAge: 20\nGPA: 3.6\nPercentage: 90.0%\n\n✓ Barcha testlar muvaffaqiyatli o'tdi!`
       );
       setRunning(false);
     }, 1500);
@@ -37,7 +37,7 @@ const LessonView = () => {
     setRunning(true);
     setTimeout(() => {
       setOutput(
-        `Student: Ali\nAge: 20\nGPA: 3.6\nPercentage: 90.0%\n\n✅ Submission Accepted! +50 points\nAll 3 test cases passed.`
+        `Student: Ali\nAge: 20\nGPA: 3.6\nPercentage: 90.0%\n\n✅ Qabul qilindi! +50 ball\nBarcha 3 ta test muvaffaqiyatli o'tdi.`
       );
       setSubmitted(true);
       setRunning(false);
@@ -45,9 +45,9 @@ const LessonView = () => {
   };
 
   const tabs = [
-    { key: "video" as const, label: "Video", icon: Video },
-    { key: "theory" as const, label: "Theory", icon: BookOpen },
-    { key: "practice" as const, label: "Practice", icon: Terminal },
+    { key: "video" as const, label: "Video dars", icon: Video },
+    { key: "theory" as const, label: "Nazariya", icon: BookOpen },
+    { key: "practice" as const, label: "Amaliyot", icon: Terminal },
   ];
 
   return (
@@ -62,7 +62,7 @@ const LessonView = () => {
               <ArrowLeft className="w-4 h-4" />
             </Link>
             <div>
-              <p className="text-xs text-muted-foreground">Lesson {lessonId} of 108</p>
+              <p className="text-xs text-muted-foreground">108 dan {lessonId}-dars</p>
               <h1 className="font-semibold text-foreground">{lessonTitle}</h1>
             </div>
           </div>
@@ -96,7 +96,7 @@ const LessonView = () => {
                   <Play className="w-8 h-8 text-accent ml-1" />
                 </div>
                 <p className="text-foreground font-medium">{lessonTitle}</p>
-                <p className="text-sm text-muted-foreground mt-1">HLS Video Stream • 18:32</p>
+                <p className="text-sm text-muted-foreground mt-1">HLS Video oqimi • 18:32</p>
               </div>
             </div>
           </motion.div>
@@ -127,14 +127,14 @@ const LessonView = () => {
                     disabled={running}
                     className="px-3 py-1 text-xs font-medium rounded bg-secondary text-foreground hover:bg-secondary/80 transition-colors disabled:opacity-50"
                   >
-                    {running ? "Running..." : "▶ Run"}
+                    {running ? "Ishlamoqda..." : "▶ Ishga tushirish"}
                   </button>
                   <button
                     onClick={handleSubmit}
                     disabled={running || submitted}
                     className="px-3 py-1 text-xs font-medium rounded bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
                   >
-                    {submitted ? "✓ Submitted" : "Submit"}
+                    {submitted ? "✓ Yuborildi" : "Tekshirish uchun yuborish"}
                   </button>
                 </div>
               </div>
@@ -163,14 +163,14 @@ const LessonView = () => {
             <div className="glass-card flex flex-col overflow-hidden">
               <div className="flex items-center gap-2 px-4 py-2 border-b border-border">
                 <Terminal className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium text-foreground">Output</span>
+                <span className="text-sm font-medium text-foreground">Natija</span>
               </div>
               <div className="flex-1 p-4 font-mono text-sm overflow-auto">
                 {output ? (
                   <pre className="text-foreground whitespace-pre-wrap">{output}</pre>
                 ) : (
                   <p className="text-muted-foreground italic">
-                    Run your code to see output here...
+                    Natijani ko'rish uchun kodingizni ishga tushiring...
                   </p>
                 )}
               </div>
@@ -188,12 +188,12 @@ const LessonView = () => {
                   {submitted ? (
                     <>
                       <CheckCircle2 className="w-4 h-4" />
-                      Next Lesson
+                      Keyingi dars
                       <ArrowRight className="w-4 h-4" />
                     </>
                   ) : (
                     <>
-                      <span>Submit code to unlock next lesson</span>
+                      <span>Keyingi darsni ochish uchun kodni yuboring</span>
                     </>
                   )}
                 </button>
