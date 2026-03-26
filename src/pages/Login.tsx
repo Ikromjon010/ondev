@@ -15,7 +15,7 @@ const Login = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Login successful! Redirecting...");
+    toast.success("Muvaffaqiyatli kirdingiz! Yo'naltirilmoqda...");
   };
 
   return (
@@ -32,8 +32,8 @@ const Login = () => {
 
         <Card className="glass-card">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Welcome back</CardTitle>
-            <CardDescription>Log in to continue your learning journey</CardDescription>
+            <CardTitle className="text-2xl">Qaytganingiz bilan</CardTitle>
+            <CardDescription>O'rganish sayohatingizni davom ettirish uchun kiring</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
@@ -48,13 +48,13 @@ const Login = () => {
 
             <div className="flex items-center gap-3">
               <Separator className="flex-1" />
-              <span className="text-xs text-muted-foreground">or</span>
+              <span className="text-xs text-muted-foreground">yoki</span>
               <Separator className="flex-1" />
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
+                <Label htmlFor="phone">Telefon raqam</Label>
                 <Input
                   id="phone"
                   placeholder="+998 90 123 45 67"
@@ -63,7 +63,7 @@ const Login = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Parol</Label>
                 <div className="relative">
                   <Input
                     id="password"
@@ -81,13 +81,13 @@ const Login = () => {
                   </button>
                 </div>
               </div>
-              <Button type="submit" className="w-full">Log In</Button>
+              <Button type="submit" className="w-full">Kirish</Button>
             </form>
 
             <p className="text-center text-sm text-muted-foreground">
-              Don't have an account?{" "}
+              Hisobingiz yo'qmi?{" "}
               <Link to="/register" className="text-primary hover:underline font-medium">
-                Sign up
+                Ro'yxatdan o'ting
               </Link>
             </p>
           </CardContent>

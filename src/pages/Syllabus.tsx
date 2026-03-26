@@ -17,9 +17,9 @@ const Syllabus = () => {
     <div className="min-h-screen bg-background">
       <AppHeader />
       <main className="container px-4 py-6 max-w-4xl">
-        <h1 className="text-2xl font-bold text-foreground mb-1">Course Syllabus</h1>
+        <h1 className="text-2xl font-bold text-foreground mb-1">Kurs dasturi</h1>
         <p className="text-muted-foreground mb-6">
-          9-month Python & Django Backend Development Program
+          9 oylik Python & Django Backend Dasturlash Dasturi
         </p>
 
         <div className="space-y-8">
@@ -28,7 +28,7 @@ const Syllabus = () => {
               <div className="flex items-center gap-3 mb-4">
                 <span className={`tier-badge-${tier.badge}`}>{tier.name}</span>
                 <span className="text-sm text-muted-foreground">{tier.months}</span>
-                <span className="text-xs text-muted-foreground">• {tier.totalLessons} lessons</span>
+                <span className="text-xs text-muted-foreground">• {tier.totalLessons} ta dars</span>
               </div>
 
               <div className="space-y-3">
@@ -53,11 +53,11 @@ const Syllabus = () => {
                           <div className="text-left">
                             <div className="flex items-center gap-2">
                               <h3 className="font-medium text-foreground">
-                                Month {mod.month}: {mod.title}
+                                {mod.month}-oy: {mod.title}
                               </h3>
                               {isFree && (
                                 <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-primary/20 text-primary">
-                                  Free
+                                  Bepul
                                 </span>
                               )}
                               {isPremium && (
@@ -67,7 +67,7 @@ const Syllabus = () => {
                               )}
                             </div>
                             <p className="text-xs text-muted-foreground mt-0.5">
-                              {completed}/{mod.lessons.length} completed
+                              {completed}/{mod.lessons.length} yakunlandi
                             </p>
                           </div>
                         </div>

@@ -6,7 +6,7 @@ const ProgressOverview = () => {
   const progress = Math.round((currentUser.completedLessons / currentUser.totalLessons) * 100);
 
   const milestones = [
-    { name: "To-Do List App", month: 2, lesson: 24, icon: BookOpen, done: false },
+    { name: "To-Do List Ilovasi", month: 2, lesson: 24, icon: BookOpen, done: false },
     { name: "E-commerce Backend", month: 6, lesson: 72, icon: Code2, done: false },
     { name: "Real-time Chat", month: 9, lesson: 108, icon: Rocket, done: false },
   ];
@@ -16,9 +16,9 @@ const ProgressOverview = () => {
       {/* Welcome */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-2xl font-bold text-foreground">
-          Welcome back, {currentUser.name.split(" ")[0]} 👋
+          Qaytganingiz bilan, {currentUser.name.split(" ")[0]} 👋
         </h1>
-        <p className="text-muted-foreground mt-1">Continue your Python & Django journey</p>
+        <p className="text-muted-foreground mt-1">Python & Django yo'lingizni davom ettiring</p>
       </motion.div>
 
       {/* Overall Progress */}
@@ -31,10 +31,10 @@ const ProgressOverview = () => {
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Target className="w-5 h-5 text-accent" />
-            <h2 className="font-semibold text-foreground">Overall Progress</h2>
+            <h2 className="font-semibold text-foreground">Umumiy natija</h2>
           </div>
           <span className="text-sm text-muted-foreground">
-            {currentUser.completedLessons}/{currentUser.totalLessons} lessons
+            {currentUser.completedLessons}/{currentUser.totalLessons} dars
           </span>
         </div>
         <div className="progress-bar-track h-4">
@@ -46,9 +46,9 @@ const ProgressOverview = () => {
           />
         </div>
         <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-          <span>Month 1</span>
-          <span>{progress}% complete</span>
-          <span>Month 9</span>
+          <span>1-oy</span>
+          <span>{progress}% yakunlandi</span>
+          <span>9-oy</span>
         </div>
 
         {/* Milestones */}
@@ -68,7 +68,7 @@ const ProgressOverview = () => {
                 <p className={`text-xs font-medium ${reached ? "text-primary" : "text-muted-foreground"}`}>
                   {m.name}
                 </p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">Month {m.month}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{m.month}-oy</p>
               </div>
             );
           })}
@@ -78,9 +78,9 @@ const ProgressOverview = () => {
       {/* Quick Stats */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: "Current Module", value: "Adv. Python Basics", sub: "Month 2" },
-          { label: "Next Lesson", value: "Decorators", sub: "Lesson 20 of 108" },
-          { label: "Time Invested", value: "42 hrs", sub: "This month: 8 hrs" },
+          { label: "Joriy modul", value: "Kengaytirilgan Python", sub: "2-oy" },
+          { label: "Keyingi dars", value: "Dekoratorlar", sub: "108 dan 20-dars" },
+          { label: "Sarflangan vaqt", value: "42 soat", sub: "Bu oy: 8 soat" },
         ].map((stat, i) => (
           <motion.div
             key={i}

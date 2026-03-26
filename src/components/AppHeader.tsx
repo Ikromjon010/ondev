@@ -2,9 +2,9 @@ import { Link, useLocation } from "react-router-dom";
 import { LayoutDashboard, BookOpen, Code2, GraduationCap } from "lucide-react";
 
 const navItems = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/syllabus", label: "Syllabus", icon: BookOpen },
-  { to: "/lesson/2", label: "Current Lesson", icon: Code2 },
+  { to: "/dashboard", label: "Asosiy oyna", icon: LayoutDashboard },
+  { to: "/syllabus", label: "Kurs dasturi", icon: BookOpen },
+  { to: "/lesson/2", label: "Joriy dars", icon: Code2 },
 ];
 
 const AppHeader = () => {

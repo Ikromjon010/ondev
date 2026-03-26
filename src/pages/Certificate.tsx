@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 const Certificate = () => {
   const studentName = "Sardor Rakhimov";
-  const date = new Date().toLocaleDateString("en-US", {
+  const date = new Date().toLocaleDateString("uz-UZ", {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -26,7 +26,7 @@ const Certificate = () => {
           </Link>
           <Button variant="ghost" size="sm" asChild>
             <Link to="/dashboard" className="gap-1">
-              <ArrowLeft className="w-4 h-4" /> Dashboard
+              <ArrowLeft className="w-4 h-4" /> Asosiy oyna
             </Link>
           </Button>
         </div>
@@ -51,26 +51,26 @@ const Certificate = () => {
             </div>
 
             <h1 className="text-3xl md:text-4xl font-bold text-[hsl(220,14%,15%)] tracking-tight mb-2">
-              Certificate of Completion
+              Yakunlash sertifikati
             </h1>
             <div className="w-24 h-0.5 bg-[hsl(160,84%,39%)] mx-auto mb-6" />
 
-            <p className="text-sm text-[hsl(220,14%,40%)] mb-2">This certifies that</p>
+            <p className="text-sm text-[hsl(220,14%,40%)] mb-2">Ushbu sertifikat tasdiqlaydiki</p>
             <h2 className="text-2xl md:text-3xl font-bold text-[hsl(220,14%,10%)] mb-2 font-serif italic">
               {studentName}
             </h2>
             <p className="text-sm text-[hsl(220,14%,40%)] max-w-md mb-8 leading-relaxed">
-              has successfully completed the <strong className="text-[hsl(220,14%,15%)]">9-Month Python & Django Backend Development Program</strong> on ondev.uz
+              ondev.uz platformasida <strong className="text-[hsl(220,14%,15%)]">9 oylik Python & Django Backend Dasturlash Dasturi</strong>ni muvaffaqiyatli yakunladi
             </p>
 
             <div className="flex flex-col sm:flex-row items-center gap-6 mb-6">
               <div className="text-center">
-                <p className="text-xs text-[hsl(220,14%,50%)] uppercase tracking-widest mb-1">Date</p>
+                <p className="text-xs text-[hsl(220,14%,50%)] uppercase tracking-widest mb-1">Sana</p>
                 <p className="font-semibold text-[hsl(220,14%,15%)]">{date}</p>
               </div>
               <div className="hidden sm:block w-px h-8 bg-[hsl(220,12%,75%)]" />
               <div className="text-center">
-                <p className="text-xs text-[hsl(220,14%,50%)] uppercase tracking-widest mb-1">Credential ID</p>
+                <p className="text-xs text-[hsl(220,14%,50%)] uppercase tracking-widest mb-1">Sertifikat ID</p>
                 <p className="font-mono text-sm font-semibold text-[hsl(220,14%,15%)]">{credentialId}</p>
               </div>
             </div>
@@ -88,14 +88,14 @@ const Certificate = () => {
                 />
               ))}
             </div>
-            <p className="text-[10px] text-[hsl(220,14%,50%)] mt-1">Scan to verify</p>
+            <p className="text-[10px] text-[hsl(220,14%,50%)] mt-1">Tekshirish uchun skanerlang</p>
           </div>
         </div>
 
         {/* Action buttons */}
         <div className="flex gap-3 mt-8">
           <Button className="gap-2" onClick={() => window.print()}>
-            <Download className="w-4 h-4" /> Download PDF
+            <Download className="w-4 h-4" /> PDF yuklab olish
           </Button>
           <Button variant="outline" className="gap-2" asChild>
             <a
@@ -103,7 +103,7 @@ const Certificate = () => {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <Linkedin className="w-4 h-4" /> Share on LinkedIn
+              <Linkedin className="w-4 h-4" /> LinkedIn da ulashish
             </a>
           </Button>
         </div>
