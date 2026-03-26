@@ -198,7 +198,7 @@ Dastur yozing:
 3. GPA ni foizga aylantiring (25 ga ko'paytiring)
 `;
 
-export const sampleCode = \`# O'zgaruvchilar va ma'lumot turlari amaliyoti
+export const sampleCode = `# O'zgaruvchilar va ma'lumot turlari amaliyoti
 # Quyidagi kodni to'ldiring
 
 # 1. Talaba uchun o'zgaruvchilar yarating
@@ -214,4 +214,4 @@ print(f"GPA: {student_gpa}")
 # 3. GPA ni foizga aylantiring
 percentage = student_gpa * 25
 print(f"Foiz: {percentage}%")
-\`;
+`;
