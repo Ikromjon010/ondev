@@ -1,5 +1,7 @@
-import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, BookOpen, Code2, GraduationCap } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { LayoutDashboard, BookOpen, Code2, GraduationCap, LogOut, Shield } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
 
 const navItems = [
   { to: "/dashboard", label: "Asosiy oyna", icon: LayoutDashboard },
@@ -9,6 +11,13 @@ const navItems = [
 
 const AppHeader = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, isAdmin, signOut, profile } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
@@ -39,6 +48,33 @@ const AppHeader = () => {
               </Link>
             );
           })}
+          {isAdmin && (
+            <Link
+              to="/admin"
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                location.pathname.startsWith("/admin")
+                  ? "bg-warning/10 text-warning"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+              }`}
+            >
+              <Shield className="w-4 h-4" />
+              Admin
+            </Link>
+          )}
+          {user ? (
+            <div className="flex items-center gap-2 ml-2">
+              <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold">
+                {profile?.full_name?.charAt(0) || "U"}
+              </div>
+              <Button variant="ghost" size="sm" onClick={handleSignOut} className="gap-1 text-muted-foreground">
+                <LogOut className="w-4 h-4" /> Chiqish
+              </Button>
+            </div>
+          ) : (
+            <Button variant="ghost" size="sm" asChild className="ml-2">
+              <Link to="/login">Kirish</Link>
+            </Button>
+          )}
         </nav>
       </div>
     </header>
