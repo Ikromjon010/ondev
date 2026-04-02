@@ -1,34 +1,61 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Play, CheckCircle2, ArrowRight, ArrowLeft, Terminal, BookOpen, Video } from "lucide-react";
-import { sampleLessonContent, sampleCode, tiers } from "@/data/courseData";
 import AppHeader from "@/components/AppHeader";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Editor from "@monaco-editor/react";
 import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const LessonView = () => {
   const { id } = useParams();
-  const lessonId = parseInt(id || "2");
+  const lessonId = parseInt(id || "1");
 
-  // Find lesson info
-  const allLessons = tiers.flatMap((t) => t.modules.flatMap((m) => m.lessons));
-  const lesson = allLessons.find((l) => l.id === lessonId);
-  const lessonTitle = lesson?.title || "Variables & Data Types";
+  const [lesson, setLesson] = useState<{
+    title: string;
+    content_md: string | null;
+    starter_code: string | null;
+    solution_code: string | null;
+    video_url: string | null;
+    duration: string | null;
+    sort_order: number;
+  } | null>(null);
+  const [totalLessons, setTotalLessons] = useState(108);
+  const [loading, setLoading] = useState(true);
 
-  const [code, setCode] = useState(sampleCode);
+  const [code, setCode] = useState("");
   const [output, setOutput] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [running, setRunning] = useState(false);
   const [activeTab, setActiveTab] = useState<"video" | "theory" | "practice">("video");
 
+  useEffect(() => {
+    const fetchLesson = async () => {
+      setLoading(true);
+      const [{ data: lessonData }, { count }] = await Promise.all([
+        supabase
+          .from("lessons")
+          .select("title, content_md, starter_code, solution_code, video_url, duration, sort_order")
+          .eq("id", lessonId)
+          .single(),
+        supabase.from("lessons").select("id", { count: "exact", head: true }),
+      ]);
+      setLesson(lessonData);
+      setTotalLessons(count || 108);
+      setCode(lessonData?.starter_code || "# Kodingizni shu yerga yozing\n");
+      setLoading(false);
+      setSubmitted(false);
+      setOutput("");
+    };
+    fetchLesson();
+  }, [lessonId]);
+
   const handleRun = () => {
     setRunning(true);
     setTimeout(() => {
-      setOutput(
-        `Student: Ali\nAge: 20\nGPA: 3.6\nPercentage: 90.0%\n\n✓ Barcha testlar muvaffaqiyatli o'tdi!`
-      );
+      setOutput("✓ Kod muvaffaqiyatli ishga tushirildi!");
       setRunning(false);
     }, 1500);
   };
@@ -36,9 +63,7 @@ const LessonView = () => {
   const handleSubmit = () => {
     setRunning(true);
     setTimeout(() => {
-      setOutput(
-        `Student: Ali\nAge: 20\nGPA: 3.6\nPercentage: 90.0%\n\n✅ Qabul qilindi! +50 ball\nBarcha 3 ta test muvaffaqiyatli o'tdi.`
-      );
+      setOutput("✅ Qabul qilindi! +50 ball\nBarcha testlar muvaffaqiyatli o'tdi.");
       setSubmitted(true);
       setRunning(false);
     }, 2000);
@@ -49,6 +74,20 @@ const LessonView = () => {
     { key: "theory" as const, label: "Nazariya", icon: BookOpen },
     { key: "practice" as const, label: "Amaliyot", icon: Terminal },
   ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <AppHeader />
+        <main className="container px-4 py-6">
+          <Skeleton className="h-8 w-64 mb-4" />
+          <Skeleton className="h-96 w-full rounded-lg" />
+        </main>
+      </div>
+    );
+  }
+
+  const lessonTitle = lesson?.title || "Dars";
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -62,7 +101,7 @@ const LessonView = () => {
               <ArrowLeft className="w-4 h-4" />
             </Link>
             <div>
-              <p className="text-xs text-muted-foreground">108 dan {lessonId}-dars</p>
+              <p className="text-xs text-muted-foreground">{totalLessons} dan {lesson?.sort_order || lessonId}-dars</p>
               <h1 className="font-semibold text-foreground">{lessonTitle}</h1>
             </div>
           </div>
@@ -96,7 +135,9 @@ const LessonView = () => {
                   <Play className="w-8 h-8 text-accent ml-1" />
                 </div>
                 <p className="text-foreground font-medium">{lessonTitle}</p>
-                <p className="text-sm text-muted-foreground mt-1">HLS Video oqimi • 18:32</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {lesson?.video_url ? "Video mavjud" : "Video tayyorlanmoqda"} • {lesson?.duration || "15min"}
+                </p>
               </div>
             </div>
           </motion.div>
@@ -105,9 +146,13 @@ const LessonView = () => {
         {activeTab === "theory" && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-4xl mx-auto">
             <div className="glass-card p-6 markdown-content">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {sampleLessonContent}
-              </ReactMarkdown>
+              {lesson?.content_md ? (
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {lesson.content_md}
+                </ReactMarkdown>
+              ) : (
+                <p className="text-muted-foreground italic">Nazariya kontenti tayyorlanmoqda...</p>
+              )}
             </div>
           </motion.div>
         )}
@@ -177,8 +222,9 @@ const LessonView = () => {
 
               {/* Next Lesson */}
               <div className="border-t border-border p-4">
-                <button
-                  disabled={!submitted}
+                <Link
+                  to={submitted ? `/lesson/${lessonId + 1}` : "#"}
+                  onClick={(e) => !submitted && e.preventDefault()}
                   className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-lg font-medium text-sm transition-all ${
                     submitted
                       ? "bg-primary text-primary-foreground hover:bg-primary/90 glow-success"
@@ -192,11 +238,9 @@ const LessonView = () => {
                       <ArrowRight className="w-4 h-4" />
                     </>
                   ) : (
-                    <>
-                      <span>Keyingi darsni ochish uchun kodni yuboring</span>
-                    </>
+                    <span>Keyingi darsni ochish uchun kodni yuboring</span>
                   )}
-                </button>
+                </Link>
               </div>
             </div>
           </motion.div>

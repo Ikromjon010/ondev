@@ -1,27 +1,65 @@
-import { currentUser } from "@/data/courseData";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { BookOpen, Code2, Rocket, Target } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const ProgressOverview = () => {
-  const progress = Math.round((currentUser.completedLessons / currentUser.totalLessons) * 100);
+  const { user, profile } = useAuth();
+  const [completedCount, setCompletedCount] = useState(0);
+  const [totalLessons, setTotalLessons] = useState(108);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetch = async () => {
+      const [{ count: total }, progressResult] = await Promise.all([
+        supabase.from("lessons").select("id", { count: "exact", head: true }),
+        user
+          ? supabase
+              .from("user_progress")
+              .select("id", { count: "exact", head: true })
+              .eq("user_id", user.id)
+              .eq("completed", true)
+          : Promise.resolve({ count: 0 }),
+      ]);
+      setTotalLessons(total || 108);
+      setCompletedCount(progressResult.count || 0);
+      setLoading(false);
+    };
+    fetch();
+  }, [user]);
+
+  const progress = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
+  const firstName = profile?.full_name?.split(" ")[0] || "Foydalanuvchi";
 
   const milestones = [
-    { name: "To-Do List Ilovasi", month: 2, lesson: 24, icon: BookOpen, done: false },
-    { name: "E-commerce Backend", month: 6, lesson: 72, icon: Code2, done: false },
-    { name: "Real-time Chat", month: 9, lesson: 108, icon: Rocket, done: false },
+    { name: "To-Do List Ilovasi", month: 2, lesson: 24, icon: BookOpen },
+    { name: "E-commerce Backend", month: 6, lesson: 72, icon: Code2 },
+    { name: "Real-time Chat", month: 9, lesson: 108, icon: Rocket },
   ];
+
+  if (loading) {
+    return (
+      <div className="flex-1 space-y-6">
+        <Skeleton className="h-10 w-64" />
+        <Skeleton className="h-48 w-full rounded-lg" />
+        <div className="grid grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => <Skeleton key={i} className="h-24 rounded-lg" />)}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 space-y-6">
-      {/* Welcome */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-2xl font-bold text-foreground">
-          Qaytganingiz bilan, {currentUser.name.split(" ")[0]} 👋
+          Qaytganingiz bilan, {firstName} 👋
         </h1>
         <p className="text-muted-foreground mt-1">Python & Django yo'lingizni davom ettiring</p>
       </motion.div>
 
-      {/* Overall Progress */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -34,7 +72,7 @@ const ProgressOverview = () => {
             <h2 className="font-semibold text-foreground">Umumiy natija</h2>
           </div>
           <span className="text-sm text-muted-foreground">
-            {currentUser.completedLessons}/{currentUser.totalLessons} dars
+            {completedCount}/{totalLessons} dars
           </span>
         </div>
         <div className="progress-bar-track h-4">
@@ -51,10 +89,9 @@ const ProgressOverview = () => {
           <span>9-oy</span>
         </div>
 
-        {/* Milestones */}
         <div className="grid grid-cols-3 gap-4 mt-5">
           {milestones.map((m, i) => {
-            const reached = currentUser.completedLessons >= m.lesson;
+            const reached = completedCount >= m.lesson;
             return (
               <div
                 key={i}
@@ -75,12 +112,11 @@ const ProgressOverview = () => {
         </div>
       </motion.div>
 
-      {/* Quick Stats */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: "Joriy modul", value: "Kengaytirilgan Python", sub: "2-oy" },
-          { label: "Keyingi dars", value: "Dekoratorlar", sub: "108 dan 20-dars" },
-          { label: "Sarflangan vaqt", value: "42 soat", sub: "Bu oy: 8 soat" },
+          { label: "Joriy modul", value: "—", sub: "" },
+          { label: "Keyingi dars", value: "—", sub: `${totalLessons} ta dars` },
+          { label: "Yakunlangan", value: `${completedCount} dars`, sub: `${totalLessons} dan` },
         ].map((stat, i) => (
           <motion.div
             key={i}
