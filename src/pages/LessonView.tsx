@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const LessonView = () => {
+  const { isAdmin } = useAuth();
   const { id } = useParams();
   const lessonId = parseInt(id || "1");
 
