@@ -7,9 +7,11 @@ import remarkGfm from "remark-gfm";
 import Editor from "@monaco-editor/react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const LessonView = () => {
+  const { isAdmin } = useAuth();
   const { id } = useParams();
   const lessonId = parseInt(id || "1");
 
@@ -148,7 +150,11 @@ const LessonView = () => {
             <div className="glass-card p-6 markdown-content">
               {lesson?.content_md ? (
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {lesson.content_md}
+                  {(() => {
+                    if (isAdmin) return lesson.content_md;
+                    const studentMatch = lesson.content_md.match(/#{1,3}\s*📚\s*STUDENT KONSPEKTI[\s\S]*/i);
+                    return studentMatch ? studentMatch[0] : lesson.content_md;
+                  })()}
                 </ReactMarkdown>
               ) : (
                 <p className="text-muted-foreground italic">Nazariya kontenti tayyorlanmoqda...</p>
