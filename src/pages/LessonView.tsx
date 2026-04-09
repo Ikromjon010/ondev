@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Play, CheckCircle2, ArrowRight, ArrowLeft, Terminal, BookOpen, Video } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
@@ -9,9 +9,11 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
+import { awardPoints } from "@/hooks/useGamification";
+import CelebrationOverlay from "@/components/CelebrationOverlay";
 
 const LessonView = () => {
-  const { isAdmin } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { id } = useParams();
   const lessonId = parseInt(id || "1");
 
@@ -33,6 +35,14 @@ const LessonView = () => {
   const [running, setRunning] = useState(false);
   const [activeTab, setActiveTab] = useState<"video" | "theory" | "practice">("video");
 
+  // Celebration state
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [celebrationData, setCelebrationData] = useState({
+    points: 0,
+    streak: 0,
+    badges: [] as { name: string; icon: string; description: string }[],
+  });
+
   useEffect(() => {
     const fetchLesson = async () => {
       setLoading(true);
@@ -44,15 +54,26 @@ const LessonView = () => {
           .single(),
         supabase.from("lessons").select("id", { count: "exact", head: true }),
       ]);
+
+      // Check if already completed
+      if (user) {
+        const { data: progress } = await supabase
+          .from("user_progress")
+          .select("completed")
+          .eq("user_id", user.id)
+          .eq("lesson_id", lessonId)
+          .single();
+        if (progress?.completed) setSubmitted(true);
+      }
+
       setLesson(lessonData);
       setTotalLessons(count || 108);
       setCode(lessonData?.starter_code || "# Kodingizni shu yerga yozing\n");
       setLoading(false);
-      setSubmitted(false);
       setOutput("");
     };
     fetchLesson();
-  }, [lessonId]);
+  }, [lessonId, user]);
 
   const handleRun = () => {
     setRunning(true);
@@ -62,14 +83,28 @@ const LessonView = () => {
     }, 1500);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    if (!user) return;
     setRunning(true);
-    setTimeout(() => {
-      setOutput("✅ Qabul qilindi! +50 ball\nBarcha testlar muvaffaqiyatli o'tdi.");
+
+    try {
+      const result = await awardPoints(user.id, lessonId, code, 50);
+      setOutput(`✅ Qabul qilindi! +${result.pointsEarned} ball\nBarcha testlar muvaffaqiyatli o'tdi.\nJami ballar: ${result.totalPoints}`);
       setSubmitted(true);
-      setRunning(false);
-    }, 2000);
+
+      setCelebrationData({
+        points: result.pointsEarned,
+        streak: result.newStreak,
+        badges: result.newBadges,
+      });
+      setShowCelebration(true);
+    } catch {
+      setOutput("❌ Xatolik yuz berdi. Qaytadan urinib ko'ring.");
+    }
+    setRunning(false);
   };
+
+  const closeCelebration = useCallback(() => setShowCelebration(false), []);
 
   const tabs = [
     { key: "video" as const, label: "Video dars", icon: Video },
@@ -94,6 +129,13 @@ const LessonView = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <AppHeader />
+      <CelebrationOverlay
+        show={showCelebration}
+        points={celebrationData.points}
+        streak={celebrationData.streak}
+        badges={celebrationData.badges}
+        onClose={closeCelebration}
+      />
 
       {/* Lesson Header */}
       <div className="border-b border-border bg-card/50">
