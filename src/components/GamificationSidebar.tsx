@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Trophy, Flame, Star, TrendingUp, Award } from "lucide-react";
+import { Trophy, Flame, Star, TrendingUp, Award, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
