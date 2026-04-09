@@ -150,10 +150,11 @@ const LessonView = () => {
             <div className="glass-card p-6 markdown-content">
               {lesson?.content_md ? (
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {isAdmin
-                    ? lesson.content_md
-                    : lesson.content_md.replace(/#{1,3}\s*👨‍🏫\s*O['ʻ']?QITUVCHI SKRIPTI[\s\S]*?(?=#{1,3}\s*📚|$)/gi, '').trim()
-                  }
+                  {(() => {
+                    if (isAdmin) return lesson.content_md;
+                    const studentMatch = lesson.content_md.match(/#{1,3}\s*📚\s*STUDENT KONSPEKTI[\s\S]*/i);
+                    return studentMatch ? studentMatch[0] : lesson.content_md;
+                  })()}
                 </ReactMarkdown>
               ) : (
                 <p className="text-muted-foreground italic">Nazariya kontenti tayyorlanmoqda...</p>
