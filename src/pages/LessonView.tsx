@@ -150,7 +150,10 @@ const LessonView = () => {
             <div className="glass-card p-6 markdown-content">
               {lesson?.content_md ? (
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {lesson.content_md}
+                  {isAdmin
+                    ? lesson.content_md
+                    : lesson.content_md.replace(/#{1,3}\s*👨‍🏫\s*O['ʻ']?QITUVCHI SKRIPTI[\s\S]*?(?=#{1,3}\s*📚|$)/gi, '').trim()
+                  }
                 </ReactMarkdown>
               ) : (
                 <p className="text-muted-foreground italic">Nazariya kontenti tayyorlanmoqda...</p>
