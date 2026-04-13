@@ -15,9 +15,6 @@ const AppHeader = () => {
     { to: "/syllabus", label: "Kurs dasturi", icon: BookOpen },
     { to: `/lesson/${currentLessonId}`, label: "Joriy dars", icon: Code2 },
   ];
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { user, isAdmin, signOut, profile } = useAuth();
 
   const handleSignOut = async () => {
     await signOut();
