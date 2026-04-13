@@ -1,14 +1,19 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { BookOpen, Code2, Rocket, Target } from "lucide-react";
+import { BookOpen, Code2, Rocket, Target, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useCurrentLesson } from "@/hooks/useCurrentLesson";
 
 const ProgressOverview = () => {
   const { user, profile } = useAuth();
+  const { currentLessonId } = useCurrentLesson();
   const [completedCount, setCompletedCount] = useState(0);
   const [totalLessons, setTotalLessons] = useState(108);
+  const [currentLessonTitle, setCurrentLessonTitle] = useState("");
+  const [currentModuleTitle, setCurrentModuleTitle] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
