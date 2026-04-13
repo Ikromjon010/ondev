@@ -17,7 +17,7 @@ const ProgressOverview = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchData = async () => {
       const [{ count: total }, progressResult] = await Promise.all([
         supabase.from("lessons").select("id", { count: "exact", head: true }),
         user
@@ -30,10 +30,28 @@ const ProgressOverview = () => {
       ]);
       setTotalLessons(total || 108);
       setCompletedCount(progressResult.count || 0);
+
+      // Fetch current lesson info
+      if (currentLessonId) {
+        const { data: lessonData } = await supabase
+          .from("lessons")
+          .select("title, module_id")
+          .eq("id", currentLessonId)
+          .single();
+        if (lessonData) {
+          setCurrentLessonTitle(lessonData.title);
+          const { data: moduleData } = await supabase
+            .from("modules")
+            .select("title")
+            .eq("id", lessonData.module_id)
+            .single();
+          if (moduleData) setCurrentModuleTitle(moduleData.title);
+        }
+      }
       setLoading(false);
     };
-    fetch();
-  }, [user]);
+    fetchData();
+  }, [user, currentLessonId]);
 
   const progress = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
   const firstName = profile?.full_name?.split(" ")[0] || "Foydalanuvchi";
