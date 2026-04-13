@@ -1,18 +1,23 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { BookOpen, Code2, Rocket, Target } from "lucide-react";
+import { BookOpen, Code2, Rocket, Target, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useCurrentLesson } from "@/hooks/useCurrentLesson";
 
 const ProgressOverview = () => {
   const { user, profile } = useAuth();
+  const { currentLessonId } = useCurrentLesson();
   const [completedCount, setCompletedCount] = useState(0);
   const [totalLessons, setTotalLessons] = useState(108);
+  const [currentLessonTitle, setCurrentLessonTitle] = useState("");
+  const [currentModuleTitle, setCurrentModuleTitle] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchData = async () => {
       const [{ count: total }, progressResult] = await Promise.all([
         supabase.from("lessons").select("id", { count: "exact", head: true }),
         user
@@ -25,10 +30,28 @@ const ProgressOverview = () => {
       ]);
       setTotalLessons(total || 108);
       setCompletedCount(progressResult.count || 0);
+
+      // Fetch current lesson info
+      if (currentLessonId) {
+        const { data: lessonData } = await supabase
+          .from("lessons")
+          .select("title, module_id")
+          .eq("id", currentLessonId)
+          .single();
+        if (lessonData) {
+          setCurrentLessonTitle(lessonData.title);
+          const { data: moduleData } = await supabase
+            .from("modules")
+            .select("title")
+            .eq("id", lessonData.module_id)
+            .single();
+          if (moduleData) setCurrentModuleTitle(moduleData.title);
+        }
+      }
       setLoading(false);
     };
-    fetch();
-  }, [user]);
+    fetchData();
+  }, [user, currentLessonId]);
 
   const progress = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
   const firstName = profile?.full_name?.split(" ")[0] || "Foydalanuvchi";
@@ -112,10 +135,31 @@ const ProgressOverview = () => {
         </div>
       </motion.div>
 
+      {/* Current lesson card */}
+      {currentLessonTitle && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <Link
+            to={`/lesson/${currentLessonId}`}
+            className="glass-card p-4 flex items-center justify-between group hover:border-primary/30 transition-colors block"
+          >
+            <div>
+              <p className="text-xs text-muted-foreground">Joriy dars</p>
+              <p className="font-semibold text-foreground mt-1 text-sm">{currentLessonTitle}</p>
+              <p className="text-xs text-muted-foreground">{currentModuleTitle}</p>
+            </div>
+            <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+          </Link>
+        </motion.div>
+      )}
+
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: "Joriy modul", value: "—", sub: "" },
-          { label: "Keyingi dars", value: "—", sub: `${totalLessons} ta dars` },
+          { label: "Joriy modul", value: currentModuleTitle || "—", sub: "" },
+          { label: "Keyingi dars", value: `${currentLessonId}-dars`, sub: `${totalLessons} ta dars` },
           { label: "Yakunlangan", value: `${completedCount} dars`, sub: `${totalLessons} dan` },
         ].map((stat, i) => (
           <motion.div
@@ -126,7 +170,7 @@ const ProgressOverview = () => {
             className="glass-card p-4"
           >
             <p className="text-xs text-muted-foreground">{stat.label}</p>
-            <p className="font-semibold text-foreground mt-1">{stat.value}</p>
+            <p className="font-semibold text-foreground mt-1 text-sm truncate">{stat.value}</p>
             <p className="text-xs text-muted-foreground">{stat.sub}</p>
           </motion.div>
         ))}

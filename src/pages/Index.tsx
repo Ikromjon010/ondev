@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import {
   Code2,
@@ -96,6 +97,10 @@ const fadeUp = {
 };
 
 const Index = () => {
+  const { user, loading } = useAuth();
+  
+  if (!loading && user) return <Navigate to="/dashboard" replace />;
+  
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
