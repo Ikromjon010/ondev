@@ -135,10 +135,31 @@ const ProgressOverview = () => {
         </div>
       </motion.div>
 
+      {/* Current lesson card */}
+      {currentLessonTitle && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <Link
+            to={`/lesson/${currentLessonId}`}
+            className="glass-card p-4 flex items-center justify-between group hover:border-primary/30 transition-colors block"
+          >
+            <div>
+              <p className="text-xs text-muted-foreground">Joriy dars</p>
+              <p className="font-semibold text-foreground mt-1 text-sm">{currentLessonTitle}</p>
+              <p className="text-xs text-muted-foreground">{currentModuleTitle}</p>
+            </div>
+            <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+          </Link>
+        </motion.div>
+      )}
+
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: "Joriy modul", value: "—", sub: "" },
-          { label: "Keyingi dars", value: "—", sub: `${totalLessons} ta dars` },
+          { label: "Joriy modul", value: currentModuleTitle || "—", sub: "" },
+          { label: "Keyingi dars", value: `${currentLessonId}-dars`, sub: `${totalLessons} ta dars` },
           { label: "Yakunlangan", value: `${completedCount} dars`, sub: `${totalLessons} dan` },
         ].map((stat, i) => (
           <motion.div
@@ -149,7 +170,7 @@ const ProgressOverview = () => {
             className="glass-card p-4"
           >
             <p className="text-xs text-muted-foreground">{stat.label}</p>
-            <p className="font-semibold text-foreground mt-1">{stat.value}</p>
+            <p className="font-semibold text-foreground mt-1 text-sm truncate">{stat.value}</p>
             <p className="text-xs text-muted-foreground">{stat.sub}</p>
           </motion.div>
         ))}
