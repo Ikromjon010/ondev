@@ -1,16 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Play, CheckCircle2, ArrowRight, ArrowLeft, Terminal, BookOpen, Video } from "lucide-react";
+import { Play, ArrowLeft, BookOpen, Video, Terminal } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import Editor from "@monaco-editor/react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { awardPoints } from "@/hooks/useGamification";
 import CelebrationOverlay from "@/components/CelebrationOverlay";
+import PracticeTasks from "@/components/PracticeTasks";
 
 const LessonView = () => {
   const { user, isAdmin } = useAuth();
@@ -29,13 +29,11 @@ const LessonView = () => {
   const [totalLessons, setTotalLessons] = useState(108);
   const [loading, setLoading] = useState(true);
 
-  const [code, setCode] = useState("");
   const [output, setOutput] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [running, setRunning] = useState(false);
   const [activeTab, setActiveTab] = useState<"video" | "theory" | "practice">("video");
 
-  // Celebration state
   const [showCelebration, setShowCelebration] = useState(false);
   const [celebrationData, setCelebrationData] = useState({
     points: 0,
@@ -46,6 +44,9 @@ const LessonView = () => {
   useEffect(() => {
     const fetchLesson = async () => {
       setLoading(true);
+      setSubmitted(false);
+      setOutput("");
+
       const [{ data: lessonData }, { count }] = await Promise.all([
         supabase
           .from("lessons")
@@ -55,7 +56,6 @@ const LessonView = () => {
         supabase.from("lessons").select("id", { count: "exact", head: true }),
       ]);
 
-      // Check if already completed
       if (user) {
         const { data: progress } = await supabase
           .from("user_progress")
@@ -68,14 +68,12 @@ const LessonView = () => {
 
       setLesson(lessonData);
       setTotalLessons(count || 108);
-      setCode(lessonData?.starter_code || "# Kodingizni shu yerga yozing\n");
       setLoading(false);
-      setOutput("");
     };
     fetchLesson();
   }, [lessonId, user]);
 
-  const handleRun = () => {
+  const handleRun = (code: string) => {
     setRunning(true);
     setTimeout(() => {
       setOutput("✓ Kod muvaffaqiyatli ishga tushirildi!");
@@ -83,21 +81,28 @@ const LessonView = () => {
     }, 1500);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (code: string, taskIndex: number, totalTasks: number) => {
     if (!user) return;
     setRunning(true);
 
     try {
-      const result = await awardPoints(user.id, lessonId, code, 50);
-      setOutput(`✅ Qabul qilindi! +${result.pointsEarned} ball\nBarcha testlar muvaffaqiyatli o'tdi.\nJami ballar: ${result.totalPoints}`);
-      setSubmitted(true);
+      const pointsPerTask = totalTasks > 0 ? Math.round(50 / totalTasks) : 50;
+      const isLastTask = taskIndex === totalTasks - 1 || totalTasks === 0;
 
-      setCelebrationData({
-        points: result.pointsEarned,
-        streak: result.newStreak,
-        badges: result.newBadges,
-      });
-      setShowCelebration(true);
+      const result = await awardPoints(user.id, lessonId, code, pointsPerTask);
+      setOutput(
+        `✅ Topshiriq ${taskIndex + 1} qabul qilindi! +${result.pointsEarned} ball\nJami ballar: ${result.totalPoints}`
+      );
+
+      if (isLastTask) {
+        setSubmitted(true);
+        setCelebrationData({
+          points: result.pointsEarned,
+          streak: result.newStreak,
+          badges: result.newBadges,
+        });
+        setShowCelebration(true);
+      }
     } catch {
       setOutput("❌ Xatolik yuz berdi. Qaytadan urinib ko'ring.");
     }
@@ -137,7 +142,6 @@ const LessonView = () => {
         onClose={closeCelebration}
       />
 
-      {/* Lesson Header */}
       <div className="border-b border-border bg-card/50">
         <div className="container px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -168,7 +172,6 @@ const LessonView = () => {
         </div>
       </div>
 
-      {/* Content */}
       <main className="flex-1 container px-4 py-4">
         {activeTab === "video" && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-4xl mx-auto">
@@ -206,91 +209,17 @@ const LessonView = () => {
         )}
 
         {activeTab === "practice" && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-[calc(100vh-180px)]">
-            {/* Editor */}
-            <div className="glass-card flex flex-col overflow-hidden">
-              <div className="flex items-center justify-between px-4 py-2 border-b border-border">
-                <div className="flex items-center gap-2">
-                  <Terminal className="w-4 h-4 text-accent" />
-                  <span className="text-sm font-medium text-foreground">solution.py</span>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleRun}
-                    disabled={running}
-                    className="px-3 py-1 text-xs font-medium rounded bg-secondary text-foreground hover:bg-secondary/80 transition-colors disabled:opacity-50"
-                  >
-                    {running ? "Ishlamoqda..." : "▶ Ishga tushirish"}
-                  </button>
-                  <button
-                    onClick={handleSubmit}
-                    disabled={running || submitted}
-                    className="px-3 py-1 text-xs font-medium rounded bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
-                  >
-                    {submitted ? "✓ Yuborildi" : "Tekshirish uchun yuborish"}
-                  </button>
-                </div>
-              </div>
-              <div className="flex-1">
-                <Editor
-                  height="100%"
-                  defaultLanguage="python"
-                  value={code}
-                  onChange={(v) => setCode(v || "")}
-                  theme="vs-dark"
-                  options={{
-                    minimap: { enabled: false },
-                    fontSize: 14,
-                    fontFamily: "'JetBrains Mono', monospace",
-                    padding: { top: 12 },
-                    scrollBeyondLastLine: false,
-                    lineNumbers: "on",
-                    renderLineHighlight: "line",
-                    automaticLayout: true,
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Output */}
-            <div className="glass-card flex flex-col overflow-hidden">
-              <div className="flex items-center gap-2 px-4 py-2 border-b border-border">
-                <Terminal className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium text-foreground">Natija</span>
-              </div>
-              <div className="flex-1 p-4 font-mono text-sm overflow-auto">
-                {output ? (
-                  <pre className="text-foreground whitespace-pre-wrap">{output}</pre>
-                ) : (
-                  <p className="text-muted-foreground italic">
-                    Natijani ko'rish uchun kodingizni ishga tushiring...
-                  </p>
-                )}
-              </div>
-
-              {/* Next Lesson */}
-              <div className="border-t border-border p-4">
-                <Link
-                  to={submitted ? `/lesson/${lessonId + 1}` : "#"}
-                  onClick={(e) => !submitted && e.preventDefault()}
-                  className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-lg font-medium text-sm transition-all ${
-                    submitted
-                      ? "bg-primary text-primary-foreground hover:bg-primary/90 glow-success"
-                      : "bg-secondary text-muted-foreground cursor-not-allowed"
-                  }`}
-                >
-                  {submitted ? (
-                    <>
-                      <CheckCircle2 className="w-4 h-4" />
-                      Keyingi dars
-                      <ArrowRight className="w-4 h-4" />
-                    </>
-                  ) : (
-                    <span>Keyingi darsni ochish uchun kodni yuboring</span>
-                  )}
-                </Link>
-              </div>
-            </div>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <PracticeTasks
+              contentMd={lesson?.content_md || null}
+              starterCode={lesson?.starter_code || null}
+              lessonId={lessonId}
+              submitted={submitted}
+              running={running}
+              output={output}
+              onRun={handleRun}
+              onSubmit={handleSubmit}
+            />
           </motion.div>
         )}
       </main>
