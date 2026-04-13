@@ -2,14 +2,19 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { LayoutDashboard, BookOpen, Code2, GraduationCap, LogOut, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-
-const navItems = [
-  { to: "/dashboard", label: "Asosiy oyna", icon: LayoutDashboard },
-  { to: "/syllabus", label: "Kurs dasturi", icon: BookOpen },
-  { to: "/lesson/2", label: "Joriy dars", icon: Code2 },
-];
+import { useCurrentLesson } from "@/hooks/useCurrentLesson";
 
 const AppHeader = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { user, isAdmin, signOut, profile } = useAuth();
+  const { currentLessonId } = useCurrentLesson();
+
+  const navItems = [
+    { to: "/dashboard", label: "Asosiy oyna", icon: LayoutDashboard },
+    { to: "/syllabus", label: "Kurs dasturi", icon: BookOpen },
+    { to: `/lesson/${currentLessonId}`, label: "Joriy dars", icon: Code2 },
+  ];
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isAdmin, signOut, profile } = useAuth();
