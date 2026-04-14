@@ -56,13 +56,13 @@ const PracticeTasks = ({
   submitted,
   running,
   output,
+  completedTasks,
   onRun,
   onSubmit,
 }: PracticeTasksProps) => {
   const tasks = useMemo(() => parseTasksFromMarkdown(contentMd), [contentMd]);
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
   const [taskCodes, setTaskCodes] = useState<Record<number, string>>({});
-  const [completedTasks, setCompletedTasks] = useState<Set<number>>(new Set());
 
   const hasTasks = tasks.length > 0;
   const currentTask = hasTasks ? tasks[currentTaskIndex] : null;
