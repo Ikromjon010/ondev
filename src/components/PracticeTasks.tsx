@@ -11,6 +11,7 @@ interface PracticeTasksProps {
   running: boolean;
   output: string;
   completedTasks: Set<number>;
+  savedTaskCodes: Record<number, string>;
   onRun: (code: string) => void;
   onSubmit: (code: string, taskIndex: number, totalTasks: number, taskDescription: string) => void;
 }
@@ -58,6 +59,7 @@ const PracticeTasks = ({
   running,
   output,
   completedTasks,
+  savedTaskCodes,
   onRun,
   onSubmit,
 }: PracticeTasksProps) => {
@@ -67,7 +69,8 @@ const PracticeTasks = ({
 
   const hasTasks = tasks.length > 0;
   const currentTask = hasTasks ? tasks[currentTaskIndex] : null;
-  const currentCode = taskCodes[currentTaskIndex] ?? currentTask?.code ?? starterCode ?? "# Kodingizni shu yerga yozing\n";
+  // Show saved code if task was completed, otherwise show user's draft or starter code
+  const currentCode = taskCodes[currentTaskIndex] ?? savedTaskCodes[currentTaskIndex] ?? currentTask?.code ?? starterCode ?? "# Kodingizni shu yerga yozing\n";
   const allTasksCompleted = hasTasks && completedTasks.size >= tasks.length;
   const isCurrentCompleted = completedTasks.has(currentTaskIndex);
   const isLastTask = currentTaskIndex === tasks.length - 1;
@@ -191,7 +194,7 @@ const PracticeTasks = ({
           )}
           {(allTasksCompleted || (submitted && !hasTasks)) && (
             <Link
-              to={`/lesson/${lessonId + 1}`}
+              to={`/lesson/${lessonId + 1}?tab=video`}
               className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg font-medium text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-all glow-success"
             >
               <CheckCircle2 className="w-4 h-4" />
