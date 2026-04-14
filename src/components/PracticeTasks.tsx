@@ -10,6 +10,7 @@ interface PracticeTasksProps {
   submitted: boolean;
   running: boolean;
   output: string;
+  completedTasks: Set<number>;
   onRun: (code: string) => void;
   onSubmit: (code: string, taskIndex: number, totalTasks: number, taskDescription: string) => void;
 }
