@@ -81,17 +81,32 @@ const LessonView = () => {
     }, 1500);
   };
 
-  const handleSubmit = async (code: string, taskIndex: number, totalTasks: number) => {
+  const handleSubmit = async (code: string, taskIndex: number, totalTasks: number, taskDescription: string) => {
     if (!user) return;
     setRunning(true);
+    setOutput("🔍 Tekshirilmoqda...");
 
     try {
+      // 1. AI orqali tekshirish
+      const { data: checkResult, error: checkError } = await supabase.functions.invoke("check-code", {
+        body: { taskDescription, studentCode: code },
+      });
+
+      if (checkError) throw checkError;
+
+      if (!checkResult.correct) {
+        setOutput(`❌ Noto'g'ri!\n\n${checkResult.feedback}`);
+        setRunning(false);
+        return;
+      }
+
+      // 2. To'g'ri bo'lsa — ball berish
       const pointsPerTask = totalTasks > 0 ? Math.round(50 / totalTasks) : 50;
       const isLastTask = taskIndex === totalTasks - 1 || totalTasks === 0;
 
       const result = await awardPoints(user.id, lessonId, code, pointsPerTask);
       setOutput(
-        `✅ Topshiriq ${taskIndex + 1} qabul qilindi! +${result.pointsEarned} ball\nJami ballar: ${result.totalPoints}`
+        `✅ To'g'ri! +${result.pointsEarned} ball\n${checkResult.feedback}\n\nJami ballar: ${result.totalPoints}`
       );
 
       if (isLastTask) {
