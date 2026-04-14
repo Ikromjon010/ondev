@@ -33,6 +33,7 @@ const LessonView = () => {
   const [submitted, setSubmitted] = useState(false);
   const [running, setRunning] = useState(false);
   const [activeTab, setActiveTab] = useState<"video" | "theory" | "practice">("video");
+  const [completedTasks, setCompletedTasks] = useState<Set<number>>(new Set());
 
   const [showCelebration, setShowCelebration] = useState(false);
   const [celebrationData, setCelebrationData] = useState({
@@ -105,6 +106,7 @@ const LessonView = () => {
       const isLastTask = taskIndex === totalTasks - 1 || totalTasks === 0;
 
       const result = await awardPoints(user.id, lessonId, code, pointsPerTask);
+      setCompletedTasks((prev) => new Set(prev).add(taskIndex));
       setOutput(
         `✅ To'g'ri! +${result.pointsEarned} ball\n${checkResult.feedback}\n\nJami ballar: ${result.totalPoints}`
       );
@@ -232,6 +234,7 @@ const LessonView = () => {
               submitted={submitted}
               running={running}
               output={output}
+              completedTasks={completedTasks}
               onRun={handleRun}
               onSubmit={handleSubmit}
             />
