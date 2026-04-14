@@ -11,7 +11,7 @@ interface PracticeTasksProps {
   running: boolean;
   output: string;
   onRun: (code: string) => void;
-  onSubmit: (code: string, taskIndex: number, totalTasks: number) => void;
+  onSubmit: (code: string, taskIndex: number, totalTasks: number, taskDescription: string) => void;
 }
 
 interface ParsedTask {
@@ -76,8 +76,8 @@ const PracticeTasks = ({
   };
 
   const handleSubmitTask = () => {
-    setCompletedTasks((prev) => new Set(prev).add(currentTaskIndex));
-    onSubmit(currentCode, currentTaskIndex, tasks.length);
+    const desc = currentTask?.description || "Topshiriqni bajaring";
+    onSubmit(currentCode, currentTaskIndex, tasks.length, desc);
   };
 
   return (
