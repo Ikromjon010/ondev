@@ -10,8 +10,9 @@ interface PracticeTasksProps {
   submitted: boolean;
   running: boolean;
   output: string;
+  completedTasks: Set<number>;
   onRun: (code: string) => void;
-  onSubmit: (code: string, taskIndex: number, totalTasks: number) => void;
+  onSubmit: (code: string, taskIndex: number, totalTasks: number, taskDescription: string) => void;
 }
 
 interface ParsedTask {
@@ -56,13 +57,13 @@ const PracticeTasks = ({
   submitted,
   running,
   output,
+  completedTasks,
   onRun,
   onSubmit,
 }: PracticeTasksProps) => {
   const tasks = useMemo(() => parseTasksFromMarkdown(contentMd), [contentMd]);
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
   const [taskCodes, setTaskCodes] = useState<Record<number, string>>({});
-  const [completedTasks, setCompletedTasks] = useState<Set<number>>(new Set());
 
   const hasTasks = tasks.length > 0;
   const currentTask = hasTasks ? tasks[currentTaskIndex] : null;
@@ -76,8 +77,8 @@ const PracticeTasks = ({
   };
 
   const handleSubmitTask = () => {
-    setCompletedTasks((prev) => new Set(prev).add(currentTaskIndex));
-    onSubmit(currentCode, currentTaskIndex, tasks.length);
+    const desc = currentTask?.description || "Topshiriqni bajaring";
+    onSubmit(currentCode, currentTaskIndex, tasks.length, desc);
   };
 
   return (
