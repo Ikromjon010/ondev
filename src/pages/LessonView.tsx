@@ -32,7 +32,9 @@ const LessonView = () => {
   const [output, setOutput] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [running, setRunning] = useState(false);
-  const [activeTab, setActiveTab] = useState<"video" | "theory" | "practice">("video");
+  const searchParams = new URLSearchParams(window.location.search);
+  const initialTab = (searchParams.get("tab") as "video" | "theory" | "practice") || "video";
+  const [activeTab, setActiveTab] = useState<"video" | "theory" | "practice">(initialTab);
   const [completedTasks, setCompletedTasks] = useState<Set<number>>(new Set());
 
   const [showCelebration, setShowCelebration] = useState(false);
@@ -82,6 +84,37 @@ const LessonView = () => {
     }, 1500);
   };
 
+  // Track saved codes per task for persistence
+  const [savedTaskCodes, setSavedTaskCodes] = useState<Record<number, string>>({});
+
+  // Load previously saved task codes
+  useEffect(() => {
+    if (!user) return;
+    const loadSavedCodes = async () => {
+      const { data } = await supabase
+        .from("user_progress")
+        .select("submitted_code")
+        .eq("user_id", user.id)
+        .eq("lesson_id", lessonId)
+        .single();
+      if (data?.submitted_code) {
+        try {
+          const codes = JSON.parse(data.submitted_code);
+          if (typeof codes === "object" && codes !== null) {
+            setSavedTaskCodes(codes);
+            // Mark completed tasks
+            const completed = new Set<number>();
+            Object.keys(codes).forEach((k) => completed.add(Number(k)));
+            setCompletedTasks(completed);
+          }
+        } catch {
+          // legacy string format, ignore
+        }
+      }
+    };
+    loadSavedCodes();
+  }, [user, lessonId]);
+
   const handleSubmit = async (code: string, taskIndex: number, totalTasks: number, taskDescription: string) => {
     if (!user) return;
     setRunning(true);
@@ -101,11 +134,14 @@ const LessonView = () => {
         return;
       }
 
-      // 2. To'g'ri bo'lsa — ball berish
+      // 2. To'g'ri bo'lsa — kodni saqlash va ball berish
+      const updatedCodes = { ...savedTaskCodes, [taskIndex]: code };
+      setSavedTaskCodes(updatedCodes);
+      
       const pointsPerTask = totalTasks > 0 ? Math.round(50 / totalTasks) : 50;
       const isLastTask = taskIndex === totalTasks - 1 || totalTasks === 0;
 
-      const result = await awardPoints(user.id, lessonId, code, pointsPerTask);
+      const result = await awardPoints(user.id, lessonId, JSON.stringify(updatedCodes), pointsPerTask);
       setCompletedTasks((prev) => new Set(prev).add(taskIndex));
       setOutput(
         `✅ To'g'ri! +${result.pointsEarned} ball\n${checkResult.feedback}\n\nJami ballar: ${result.totalPoints}`
