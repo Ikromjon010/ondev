@@ -49,6 +49,11 @@ const LessonView = () => {
       setLoading(true);
       setSubmitted(false);
       setOutput("");
+      setSavedTaskCodes({});
+      setCompletedTasks(new Set());
+      // Reset tab based on URL param
+      const params = new URLSearchParams(window.location.search);
+      setActiveTab((params.get("tab") as "video" | "theory" | "practice") || "video");
 
       const [{ data: lessonData }, { count }] = await Promise.all([
         supabase
