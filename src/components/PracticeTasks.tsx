@@ -194,7 +194,7 @@ const PracticeTasks = ({
           )}
           {(allTasksCompleted || (submitted && !hasTasks)) && (
             <Link
-              to={`/lesson/${lessonId + 1}`}
+              to={`/lesson/${lessonId + 1}?tab=video`}
               className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg font-medium text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-all glow-success"
             >
               <CheckCircle2 className="w-4 h-4" />

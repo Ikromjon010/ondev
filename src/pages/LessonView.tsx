@@ -271,6 +271,7 @@ const LessonView = () => {
               running={running}
               output={output}
               completedTasks={completedTasks}
+              savedTaskCodes={savedTaskCodes}
               onRun={handleRun}
               onSubmit={handleSubmit}
             />
