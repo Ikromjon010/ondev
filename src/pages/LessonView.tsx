@@ -13,7 +13,7 @@ import CelebrationOverlay from "@/components/CelebrationOverlay";
 import PracticeTasks from "@/components/PracticeTasks";
 
 const LessonView = () => {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, activeTier } = useAuth();
   const { id } = useParams();
   const lessonId = parseInt(id || "1");
 
