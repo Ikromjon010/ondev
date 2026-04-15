@@ -51,9 +51,7 @@ const LessonView = () => {
       setOutput("");
       setSavedTaskCodes({});
       setCompletedTasks(new Set());
-      // Reset tab based on URL param
-      const params = new URLSearchParams(window.location.search);
-      setActiveTab((params.get("tab") as "video" | "theory" | "practice") || "video");
+      setActiveTab((new URLSearchParams(window.location.search).get("tab") as "video" | "theory" | "practice") || "video");
 
       const [{ data: lessonData }, { count }] = await Promise.all([
         supabase
@@ -64,22 +62,27 @@ const LessonView = () => {
         supabase.from("lessons").select("id", { count: "exact", head: true }),
       ]);
 
-      if (user) {
-        const { data: progress } = await supabase
-          .from("user_progress")
-          .select("completed")
-          .eq("user_id", user.id)
-          .eq("lesson_id", lessonId)
-          .single();
-        if (progress?.completed) setSubmitted(true);
-      }
-
       setLesson(lessonData);
       setTotalLessons(count || 108);
       setLoading(false);
     };
     fetchLesson();
-  }, [lessonId, user]);
+  }, [lessonId]);
+
+  // Check completion status separately (depends on user)
+  useEffect(() => {
+    if (!user) return;
+    const checkCompletion = async () => {
+      const { data: progress } = await supabase
+        .from("user_progress")
+        .select("completed")
+        .eq("user_id", user.id)
+        .eq("lesson_id", lessonId)
+        .single();
+      if (progress?.completed) setSubmitted(true);
+    };
+    checkCompletion();
+  }, [user, lessonId]);
 
   const handleRun = (code: string) => {
     setRunning(true);
