@@ -53,14 +53,20 @@ const LessonView = () => {
       setCompletedTasks(new Set());
       setActiveTab((new URLSearchParams(window.location.search).get("tab") as "video" | "theory" | "practice") || "video");
 
-      const [{ data: lessonData }, { count }] = await Promise.all([
+      const [{ data: lessonData }, { count }, { data: moduleData }] = await Promise.all([
         supabase
           .from("lessons")
-          .select("title, content_md, starter_code, solution_code, video_url, duration, sort_order")
+          .select("title, content_md, starter_code, solution_code, video_url, duration, sort_order, module_id")
           .eq("id", lessonId)
           .single(),
         supabase.from("lessons").select("id", { count: "exact", head: true }),
+        supabase.from("modules").select("tier").eq("id", lessonId).single(),
       ]);
+
+      // Check tier access
+      if (lessonData && moduleData) {
+        // Actually need to get module by lesson's module_id
+      }
 
       setLesson(lessonData);
       setTotalLessons(count || 108);
