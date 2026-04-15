@@ -53,19 +53,32 @@ const LessonView = () => {
       setCompletedTasks(new Set());
       setActiveTab((new URLSearchParams(window.location.search).get("tab") as "video" | "theory" | "practice") || "video");
 
-      const [{ data: lessonData }, { count }, { data: moduleData }] = await Promise.all([
+      const [{ data: lessonData }, { count }] = await Promise.all([
         supabase
           .from("lessons")
           .select("title, content_md, starter_code, solution_code, video_url, duration, sort_order, module_id")
           .eq("id", lessonId)
           .single(),
         supabase.from("lessons").select("id", { count: "exact", head: true }),
-        supabase.from("modules").select("tier").eq("id", lessonId).single(),
       ]);
 
       // Check tier access
-      if (lessonData && moduleData) {
-        // Actually need to get module by lesson's module_id
+      if (lessonData) {
+        const { data: modData } = await supabase
+          .from("modules")
+          .select("tier")
+          .eq("id", lessonData.module_id)
+          .single();
+        if (modData) {
+          const tierOrder = ["free", "intermediate", "advanced"];
+          const userIdx = tierOrder.indexOf(activeTier);
+          const lessonIdx = tierOrder.indexOf(modData.tier === "basic" ? "free" : modData.tier);
+          if (userIdx < lessonIdx) {
+            toast.error("Bu dars premium. To'lov qiling yoki admin bilan bog'laning.");
+            navigate("/syllabus");
+            return;
+          }
+        }
       }
 
       setLesson(lessonData);
