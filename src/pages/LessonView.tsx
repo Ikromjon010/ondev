@@ -17,6 +17,7 @@ const LessonView = () => {
   const { user, isAdmin, activeTier } = useAuth();
   const { id } = useParams();
   const lessonId = parseInt(id || "1");
+  const navigate = useNavigate();
 
   const [lesson, setLesson] = useState<{
     title: string;
