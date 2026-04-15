@@ -216,7 +216,16 @@ const Syllabus = () => {
                                           {lesson.title}
                                         </Link>
                                       ) : (
-                                        <span className="flex-1 text-sm text-muted-foreground">
+                                        <span
+                                          className="flex-1 text-sm text-muted-foreground cursor-pointer"
+                                          onClick={() => {
+                                            if (!hasTierAccess) {
+                                              toast.error("Bu dars premium. To'lov qiling yoki admin bilan bog'laning.");
+                                            } else {
+                                              toast.info("Avval oldingi darsni yakunlang.");
+                                            }
+                                          }}
+                                        >
                                           {lesson.title}
                                         </span>
                                       )}
