@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { Play, ArrowLeft, BookOpen, Video, Terminal } from "lucide-react";
+import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -13,9 +14,10 @@ import CelebrationOverlay from "@/components/CelebrationOverlay";
 import PracticeTasks from "@/components/PracticeTasks";
 
 const LessonView = () => {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, activeTier } = useAuth();
   const { id } = useParams();
   const lessonId = parseInt(id || "1");
+  const navigate = useNavigate();
 
   const [lesson, setLesson] = useState<{
     title: string;
@@ -56,11 +58,30 @@ const LessonView = () => {
       const [{ data: lessonData }, { count }] = await Promise.all([
         supabase
           .from("lessons")
-          .select("title, content_md, starter_code, solution_code, video_url, duration, sort_order")
+          .select("title, content_md, starter_code, solution_code, video_url, duration, sort_order, module_id")
           .eq("id", lessonId)
           .single(),
         supabase.from("lessons").select("id", { count: "exact", head: true }),
       ]);
+
+      // Check tier access
+      if (lessonData) {
+        const { data: modData } = await supabase
+          .from("modules")
+          .select("tier")
+          .eq("id", lessonData.module_id)
+          .single();
+        if (modData) {
+          const tierOrder = ["free", "intermediate", "advanced"];
+          const userIdx = tierOrder.indexOf(activeTier);
+          const lessonIdx = tierOrder.indexOf(modData.tier === "basic" ? "free" : modData.tier);
+          if (userIdx < lessonIdx) {
+            toast.error("Bu dars premium. To'lov qiling yoki admin bilan bog'laning.");
+            navigate("/syllabus");
+            return;
+          }
+        }
+      }
 
       setLesson(lessonData);
       setTotalLessons(count || 108);

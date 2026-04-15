@@ -5,6 +5,8 @@ import AppHeader from "@/components/AppHeader";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 interface DBModule {
   id: number;
@@ -30,6 +32,7 @@ const tierConfig: Record<string, { name: string; months: string; badge: string }
 };
 
 const Syllabus = () => {
+  const { activeTier } = useAuth();
   const [modules, setModules] = useState<DBModule[]>([]);
   const [lessons, setLessons] = useState<DBLesson[]>([]);
   const [expandedModules, setExpandedModules] = useState<number[]>([]);
@@ -178,11 +181,18 @@ const Syllabus = () => {
                               <div className="border-t border-border">
                                 {modLessons.map((lesson, lessonIndex) => {
                                   const isCompleted = completedLessons.has(lesson.id);
-                                  // Unlock if: first lesson of first module, or previous lesson completed, or lesson itself completed
                                   const allSortedLessons = lessons.sort((a, b) => a.sort_order - b.sort_order);
                                   const globalIndex = allSortedLessons.findIndex((l) => l.id === lesson.id);
                                   const prevLesson = globalIndex > 0 ? allSortedLessons[globalIndex - 1] : null;
-                                  const isUnlocked = isCompleted || globalIndex === 0 || (prevLesson ? completedLessons.has(prevLesson.id) : false);
+                                  const sequenceUnlocked = isCompleted || globalIndex === 0 || (prevLesson ? completedLessons.has(prevLesson.id) : false);
+
+                                  // Tier access check
+                                  const tierOrder = ["free", "intermediate", "advanced"];
+                                  const userTierIndex = tierOrder.indexOf(activeTier);
+                                  const lessonTierIndex = tierOrder.indexOf(tierKey === "basic" ? "free" : tierKey);
+                                  const hasTierAccess = userTierIndex >= lessonTierIndex;
+
+                                  const isUnlocked = sequenceUnlocked && hasTierAccess;
 
                                   return (
                                     <div
@@ -206,7 +216,16 @@ const Syllabus = () => {
                                           {lesson.title}
                                         </Link>
                                       ) : (
-                                        <span className="flex-1 text-sm text-muted-foreground">
+                                        <span
+                                          className="flex-1 text-sm text-muted-foreground cursor-pointer"
+                                          onClick={() => {
+                                            if (!hasTierAccess) {
+                                              toast.error("Bu dars premium. To'lov qiling yoki admin bilan bog'laning.");
+                                            } else {
+                                              toast.info("Avval oldingi darsni yakunlang.");
+                                            }
+                                          }}
+                                        >
                                           {lesson.title}
                                         </span>
                                       )}

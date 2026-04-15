@@ -1,12 +1,14 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
   isAdmin: boolean;
+  activeTier: string;
   profile: { full_name: string; phone: string | null; avatar_url: string | null } | null;
   signOut: () => Promise<void>;
 }
@@ -16,6 +18,7 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   loading: true,
   isAdmin: false,
+  activeTier: "free",
   profile: null,
   signOut: async () => {},
 });
@@ -27,6 +30,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [activeTier, setActiveTier] = useState("free");
   const [profile, setProfile] = useState<AuthContextType["profile"]>(null);
 
   useEffect(() => {
@@ -36,16 +40,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          // Fetch profile
           setTimeout(async () => {
             const { data: profileData } = await supabase
               .from("profiles")
-              .select("full_name, phone, avatar_url")
+              .select("full_name, phone, avatar_url, is_blocked, active_tier")
               .eq("user_id", session.user.id)
               .single();
-            setProfile(profileData);
 
-            // Check admin role
+            if (profileData?.is_blocked) {
+              toast.error("Sizning hisobingiz bloklangan. Administrator bilan bog'laning.");
+              await supabase.auth.signOut();
+              return;
+            }
+
+            setProfile(profileData ? { full_name: profileData.full_name, phone: profileData.phone, avatar_url: profileData.avatar_url } : null);
+            setActiveTier(profileData?.active_tier || "free");
+
             const { data: roleData } = await supabase
               .from("user_roles")
               .select("role")
@@ -55,6 +65,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         } else {
           setProfile(null);
           setIsAdmin(false);
+          setActiveTier("free");
         }
         setLoading(false);
       }
@@ -74,7 +85,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, isAdmin, profile, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, isAdmin, activeTier, profile, signOut }}>
       {children}
     </AuthContext.Provider>
   );
