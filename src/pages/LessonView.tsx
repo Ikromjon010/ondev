@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Play, ArrowLeft, BookOpen, Video, Terminal } from "lucide-react";
+import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
