@@ -181,11 +181,18 @@ const Syllabus = () => {
                               <div className="border-t border-border">
                                 {modLessons.map((lesson, lessonIndex) => {
                                   const isCompleted = completedLessons.has(lesson.id);
-                                  // Unlock if: first lesson of first module, or previous lesson completed, or lesson itself completed
                                   const allSortedLessons = lessons.sort((a, b) => a.sort_order - b.sort_order);
                                   const globalIndex = allSortedLessons.findIndex((l) => l.id === lesson.id);
                                   const prevLesson = globalIndex > 0 ? allSortedLessons[globalIndex - 1] : null;
-                                  const isUnlocked = isCompleted || globalIndex === 0 || (prevLesson ? completedLessons.has(prevLesson.id) : false);
+                                  const sequenceUnlocked = isCompleted || globalIndex === 0 || (prevLesson ? completedLessons.has(prevLesson.id) : false);
+
+                                  // Tier access check
+                                  const tierOrder = ["free", "intermediate", "advanced"];
+                                  const userTierIndex = tierOrder.indexOf(activeTier);
+                                  const lessonTierIndex = tierOrder.indexOf(tierKey === "basic" ? "free" : tierKey);
+                                  const hasTierAccess = userTierIndex >= lessonTierIndex;
+
+                                  const isUnlocked = sequenceUnlocked && hasTierAccess;
 
                                   return (
                                     <div
