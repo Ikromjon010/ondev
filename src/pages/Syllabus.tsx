@@ -31,7 +31,7 @@ const tierConfig: Record<string, { name: string; months: string; badge: string }
   advanced: { name: "🔴 Advanced", months: "7-9 oy", badge: "advanced" },
 };
 
-const Syllabus = () => {
+const { activeTier } = useAuth();
   const [modules, setModules] = useState<DBModule[]>([]);
   const [lessons, setLessons] = useState<DBLesson[]>([]);
   const [expandedModules, setExpandedModules] = useState<number[]>([]);
