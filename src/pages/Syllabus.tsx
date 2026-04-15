@@ -5,6 +5,8 @@ import AppHeader from "@/components/AppHeader";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 interface DBModule {
   id: number;
