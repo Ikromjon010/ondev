@@ -1,16 +1,19 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useFollow } from "@/hooks/useFollow";
 import AppHeader from "@/components/AppHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { User, Phone, Shield, Trophy, Flame, BookOpen } from "lucide-react";
+import { User, Phone, Shield, Trophy, Flame, BookOpen, Users } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Profile = () => {
   const { user, profile, activeTier } = useAuth();
+  const { followersCount, followingCount } = useFollow(user?.id);
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [saving, setSaving] = useState(false);
@@ -80,7 +83,7 @@ const Profile = () => {
         <h1 className="text-2xl font-bold text-foreground mb-6">Mening profilim</h1>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
+        <div className="grid grid-cols-3 gap-3 mb-4">
           {[
             { label: "Darslar", value: stats.completedLessons, icon: BookOpen, color: "text-primary" },
             { label: "Ball", value: stats.totalPoints, icon: Trophy, color: "text-warning" },
@@ -94,6 +97,28 @@ const Profile = () => {
               </CardContent>
             </Card>
           ))}
+        </div>
+
+        {/* Follow stats */}
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <Link to="/users" className="block">
+            <Card className="glass-card text-center hover:border-primary/30 transition-colors cursor-pointer">
+              <CardContent className="pt-4 pb-3">
+                <Users className="w-5 h-5 mx-auto mb-1 text-primary" />
+                <p className="text-lg font-bold text-foreground">{followersCount}</p>
+                <p className="text-xs text-muted-foreground">Follower</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link to="/users" className="block">
+            <Card className="glass-card text-center hover:border-primary/30 transition-colors cursor-pointer">
+              <CardContent className="pt-4 pb-3">
+                <Users className="w-5 h-5 mx-auto mb-1 text-muted-foreground" />
+                <p className="text-lg font-bold text-foreground">{followingCount}</p>
+                <p className="text-xs text-muted-foreground">Following</p>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
 
         {/* Profile Form */}
