@@ -65,9 +65,9 @@ const AppHeader = () => {
           )}
           {user ? (
             <div className="flex items-center gap-2 ml-2">
-              <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold">
+              <Link to="/profile" className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold hover:bg-primary/30 transition-colors" title="Profil">
                 {profile?.full_name?.charAt(0) || "U"}
-              </div>
+              </Link>
               <Button variant="ghost" size="sm" onClick={handleSignOut} className="gap-1 text-muted-foreground">
                 <LogOut className="w-4 h-4" /> Chiqish
               </Button>
