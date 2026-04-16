@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, BookOpen, Code2, GraduationCap, LogOut, Shield } from "lucide-react";
+import { LayoutDashboard, BookOpen, Code2, GraduationCap, LogOut, Shield, Users } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useCurrentLesson } from "@/hooks/useCurrentLesson";
@@ -14,6 +14,7 @@ const AppHeader = () => {
     { to: "/dashboard", label: "Asosiy oyna", icon: LayoutDashboard },
     { to: "/syllabus", label: "Kurs dasturi", icon: BookOpen },
     { to: `/lesson/${currentLessonId}`, label: "Joriy dars", icon: Code2 },
+    { to: "/users", label: "O'quvchilar", icon: Users },
   ];
 
   const handleSignOut = async () => {
