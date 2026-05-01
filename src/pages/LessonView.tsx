@@ -177,9 +177,9 @@ const LessonView = () => {
     setOutput("🔍 Tekshirilmoqda...");
 
     try {
-      // 1. AI orqali tekshirish
+      const language = lesson?.language || lesson?.course_language || "python";
       const { data: checkResult, error: checkError } = await supabase.functions.invoke("check-code", {
-        body: { taskDescription, studentCode: code },
+        body: { taskDescription, studentCode: code, language },
       });
 
       if (checkError) throw checkError;
