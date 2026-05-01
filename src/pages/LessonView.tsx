@@ -14,7 +14,7 @@ import CelebrationOverlay from "@/components/CelebrationOverlay";
 import PracticeTasks from "@/components/PracticeTasks";
 
 const LessonView = () => {
-  const { user, isAdmin, activeTier } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { id } = useParams();
   const lessonId = parseInt(id || "1");
   const navigate = useNavigate();
@@ -64,18 +64,25 @@ const LessonView = () => {
         supabase.from("lessons").select("id", { count: "exact", head: true }),
       ]);
 
-      // Check tier access
-      if (lessonData) {
+      // Check tier access via user_course_access (per-course tier)
+      if (lessonData && user) {
         const { data: modData } = await supabase
           .from("modules")
-          .select("tier")
+          .select("tier, course_id")
           .eq("id", lessonData.module_id)
           .single();
         if (modData) {
+          const { data: accessRow } = await supabase
+            .from("user_course_access")
+            .select("tier")
+            .eq("user_id", user.id)
+            .eq("course_id", modData.course_id)
+            .maybeSingle();
+          const userTier = accessRow?.tier || "free";
           const tierOrder = ["free", "intermediate", "advanced"];
-          const userIdx = tierOrder.indexOf(activeTier);
+          const userIdx = tierOrder.indexOf(userTier);
           const lessonIdx = tierOrder.indexOf(modData.tier === "basic" ? "free" : modData.tier);
-          if (userIdx < lessonIdx) {
+          if (userIdx < lessonIdx && !isAdmin) {
             toast.error("Bu dars premium. To'lov qiling yoki admin bilan bog'laning.");
             navigate("/syllabus");
             return;
