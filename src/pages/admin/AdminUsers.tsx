@@ -41,6 +41,11 @@ interface UserProfile {
   created_at: string;
 }
 
+interface CurrentLessonInfo {
+  id: number;
+  title: string;
+}
+
 const TIER_LABELS: Record<string, string> = {
   free: "Bepul",
   intermediate: "O'rta",
@@ -50,6 +55,7 @@ const TIER_LABELS: Record<string, string> = {
 const AdminUsers = () => {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [adminIds, setAdminIds] = useState<Set<string>>(new Set());
+  const [currentLessons, setCurrentLessons] = useState<Record<string, CurrentLessonInfo>>({});
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<UserProfile | null>(null);
@@ -65,8 +71,48 @@ const AdminUsers = () => {
       .from("user_roles")
       .select("user_id, role");
 
-    setUsers((profiles as UserProfile[]) || []);
+    const profileList = (profiles as UserProfile[]) || [];
+    setUsers(profileList);
     setAdminIds(new Set(roles?.filter((r) => r.role === "admin").map((r) => r.user_id) || []));
+
+    // Har bir user uchun joriy darsni hisoblash
+    if (profileList.length > 0) {
+      const userIds = profileList.map((u) => u.user_id);
+      const { data: progress } = await supabase
+        .from("user_progress")
+        .select("user_id, lesson_id")
+        .in("user_id", userIds)
+        .eq("completed", true);
+
+      // Har bir userning oxirgi tugatgan lesson_id si
+      const lastByUser: Record<string, number> = {};
+      (progress || []).forEach((p) => {
+        if (!lastByUser[p.user_id] || p.lesson_id > lastByUser[p.user_id]) {
+          lastByUser[p.user_id] = p.lesson_id;
+        }
+      });
+
+      // Barcha darslarni olib, mapping qilish
+      const { data: lessons } = await supabase
+        .from("lessons")
+        .select("id, title")
+        .order("id", { ascending: true });
+      const lessonList = lessons || [];
+
+      const result: Record<string, CurrentLessonInfo> = {};
+      profileList.forEach((u) => {
+        const lastId = lastByUser[u.user_id];
+        if (lastId === undefined) {
+          // hech narsa tugatmagan — birinchi dars
+          if (lessonList[0]) result[u.user_id] = lessonList[0];
+        } else {
+          const next = lessonList.find((l) => l.id > lastId);
+          result[u.user_id] = next || lessonList.find((l) => l.id === lastId) || lessonList[0];
+        }
+      });
+      setCurrentLessons(result);
+    }
+
     setLoading(false);
   };
 
