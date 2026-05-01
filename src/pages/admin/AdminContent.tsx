@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,11 +8,25 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Plus, Edit, Trash2, ChevronDown, ChevronRight, BookOpen } from "lucide-react";
+import { Plus, Edit, Trash2, ChevronDown, ChevronRight, BookOpen, Eye, EyeOff } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { useCourses } from "@/hooks/useCourses";
+
+interface Course {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  icon: string;
+  color: string;
+  language: string;
+  is_published: boolean;
+  sort_order: number;
+}
 
 interface Module {
   id: number;
+  course_id: string;
   tier: string;
   month: number;
   title: string;
@@ -28,29 +42,91 @@ interface Lesson {
   content_md: string | null;
   starter_code: string | null;
   solution_code: string | null;
+  language: string | null;
   sort_order: number;
   is_free: boolean;
 }
 
 const AdminContent = () => {
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [selectedCourseId, setSelectedCourseId] = useState<string>("");
   const [modules, setModules] = useState<Module[]>([]);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [expandedModule, setExpandedModule] = useState<number | null>(null);
+
+  const [editingCourse, setEditingCourse] = useState<Partial<Course> | null>(null);
+  const [courseDialogOpen, setCourseDialogOpen] = useState(false);
   const [editingModule, setEditingModule] = useState<Partial<Module> | null>(null);
   const [editingLesson, setEditingLesson] = useState<Partial<Lesson> | null>(null);
   const [moduleDialogOpen, setModuleDialogOpen] = useState(false);
   const [lessonDialogOpen, setLessonDialogOpen] = useState(false);
 
-  const fetchData = async () => {
-    const [{ data: mods }, { data: lsns }] = await Promise.all([
-      supabase.from("modules").select("*").order("sort_order"),
-      supabase.from("lessons").select("*").order("sort_order"),
-    ]);
-    setModules(mods || []);
-    setLessons(lsns || []);
+  const fetchCourses = async () => {
+    const { data } = await supabase.from("courses").select("*").order("sort_order");
+    const list = (data as Course[]) || [];
+    setCourses(list);
+    if (!selectedCourseId && list.length > 0) {
+      setSelectedCourseId(list[0].id);
+    }
   };
 
-  useEffect(() => { fetchData(); }, []);
+  const fetchContent = async () => {
+    if (!selectedCourseId) return;
+    const { data: mods } = await supabase
+      .from("modules")
+      .select("*")
+      .eq("course_id", selectedCourseId)
+      .order("sort_order");
+    const moduleIds = (mods || []).map((m) => m.id);
+    const { data: lsns } = moduleIds.length
+      ? await supabase.from("lessons").select("*").in("module_id", moduleIds).order("sort_order")
+      : { data: [] };
+    setModules((mods as Module[]) || []);
+    setLessons((lsns as Lesson[]) || []);
+  };
+
+  useEffect(() => { fetchCourses(); }, []);
+  useEffect(() => { fetchContent(); }, [selectedCourseId]);
+
+  const saveCourse = async () => {
+    if (!editingCourse?.title || !editingCourse?.slug) {
+      toast.error("Sarlavha va slug kerak");
+      return;
+    }
+    const payload = {
+      title: editingCourse.title,
+      slug: editingCourse.slug,
+      description: editingCourse.description || null,
+      icon: editingCourse.icon || "📚",
+      color: editingCourse.color || "primary",
+      language: editingCourse.language || "python",
+      is_published: editingCourse.is_published ?? false,
+      sort_order: editingCourse.sort_order ?? courses.length,
+    };
+    if (editingCourse.id) {
+      await supabase.from("courses").update(payload).eq("id", editingCourse.id);
+    } else {
+      await supabase.from("courses").insert(payload);
+    }
+    toast.success("Kurs saqlandi");
+    setCourseDialogOpen(false);
+    setEditingCourse(null);
+    fetchCourses();
+  };
+
+  const deleteCourse = async (id: string) => {
+    if (!confirm("Bu kursni o'chirsangiz, barcha modullari va darslari ham o'chiriladi. Davom etamizmi?")) return;
+    await supabase.from("courses").delete().eq("id", id);
+    toast.success("Kurs o'chirildi");
+    if (selectedCourseId === id) setSelectedCourseId("");
+    fetchCourses();
+  };
+
+  const togglePublish = async (course: Course) => {
+    await supabase.from("courses").update({ is_published: !course.is_published }).eq("id", course.id);
+    toast.success(course.is_published ? "Yashirildi" : "Chop etildi");
+    fetchCourses();
+  };
 
   const saveModule = async () => {
     if (!editingModule?.title || !editingModule?.tier) return;
@@ -65,21 +141,22 @@ const AdminContent = () => {
       await supabase.from("modules").insert({
         title: editingModule.title,
         tier: editingModule.tier,
+        course_id: selectedCourseId,
         month: editingModule.month || 1,
-        sort_order: editingModule.sort_order || modules.length,
+        sort_order: editingModule.sort_order ?? modules.length,
       });
     }
     toast.success("Modul saqlandi");
     setModuleDialogOpen(false);
     setEditingModule(null);
-    fetchData();
+    fetchContent();
   };
 
   const deleteModule = async (id: number) => {
     if (!confirm("Bu modulni o'chirmoqchimisiz? Barcha darslari ham o'chiriladi.")) return;
     await supabase.from("modules").delete().eq("id", id);
     toast.success("Modul o'chirildi");
-    fetchData();
+    fetchContent();
   };
 
   const saveLesson = async () => {
@@ -92,6 +169,7 @@ const AdminContent = () => {
       content_md: editingLesson.content_md || null,
       starter_code: editingLesson.starter_code || null,
       solution_code: editingLesson.solution_code || null,
+      language: editingLesson.language || null,
       sort_order: editingLesson.sort_order || 0,
       is_free: editingLesson.is_free || false,
     };
@@ -103,127 +181,232 @@ const AdminContent = () => {
     toast.success("Dars saqlandi");
     setLessonDialogOpen(false);
     setEditingLesson(null);
-    fetchData();
+    fetchContent();
   };
 
   const deleteLesson = async (id: number) => {
     if (!confirm("Bu darsni o'chirmoqchimisiz?")) return;
     await supabase.from("lessons").delete().eq("id", id);
     toast.success("Dars o'chirildi");
-    fetchData();
+    fetchContent();
   };
 
   const tierLabel: Record<string, string> = { basic: "Boshlang'ich", intermediate: "O'rta", advanced: "Yuqori" };
+  const selectedCourse = courses.find((c) => c.id === selectedCourseId);
 
   return (
     <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-foreground">Kurs kontenti</h1>
-        <Dialog open={moduleDialogOpen} onOpenChange={setModuleDialogOpen}>
-          <DialogTrigger asChild>
-            <Button size="sm" className="gap-1" onClick={() => setEditingModule({})}>
-              <Plus className="w-4 h-4" /> Modul qo'shish
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="bg-card border-border">
-            <DialogHeader>
-              <DialogTitle>{editingModule?.id ? "Modulni tahrirlash" : "Yangi modul"}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label>Nomi</Label>
-                <Input value={editingModule?.title || ""} onChange={(e) => setEditingModule({ ...editingModule, title: e.target.value })} />
-              </div>
-              <div>
-                <Label>Bosqich</Label>
-                <Select value={editingModule?.tier || ""} onValueChange={(v) => setEditingModule({ ...editingModule, tier: v })}>
-                  <SelectTrigger><SelectValue placeholder="Tanlang" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="basic">Boshlang'ich</SelectItem>
-                    <SelectItem value="intermediate">O'rta</SelectItem>
-                    <SelectItem value="advanced">Yuqori</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Oy</Label>
-                  <Input type="number" value={editingModule?.month || 1} onChange={(e) => setEditingModule({ ...editingModule, month: +e.target.value })} />
-                </div>
-                <div>
-                  <Label>Tartib</Label>
-                  <Input type="number" value={editingModule?.sort_order || 0} onChange={(e) => setEditingModule({ ...editingModule, sort_order: +e.target.value })} />
-                </div>
-              </div>
-              <Button className="w-full" onClick={saveModule}>Saqlash</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      <div className="space-y-3">
-        {modules.map((mod) => {
-          const modLessons = lessons.filter((l) => l.module_id === mod.id);
-          const expanded = expandedModule === mod.id;
-          return (
-            <Card key={mod.id} className="glass-card overflow-hidden">
-              <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-secondary/30" onClick={() => setExpandedModule(expanded ? null : mod.id)}>
-                <div className="flex items-center gap-3">
-                  {expanded ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
-                  <BookOpen className="w-4 h-4 text-primary" />
-                  <div>
-                    <p className="font-medium text-foreground">{mod.month}-oy: {mod.title}</p>
-                    <p className="text-xs text-muted-foreground">{tierLabel[mod.tier]} · {modLessons.length} ta dars</p>
+      {/* Courses bar */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <h1 className="text-2xl font-bold text-foreground">Kurslar</h1>
+          <Dialog open={courseDialogOpen} onOpenChange={setCourseDialogOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="gap-1" onClick={() => setEditingCourse({})}>
+                <Plus className="w-4 h-4" /> Yangi kurs
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="bg-card border-border">
+              <DialogHeader>
+                <DialogTitle>{editingCourse?.id ? "Kursni tahrirlash" : "Yangi kurs"}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-3">
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="col-span-1">
+                    <Label>Ikon</Label>
+                    <Input value={editingCourse?.icon || ""} onChange={(e) => setEditingCourse({ ...editingCourse, icon: e.target.value })} placeholder="🐍" />
+                  </div>
+                  <div className="col-span-2">
+                    <Label>Sarlavha</Label>
+                    <Input value={editingCourse?.title || ""} onChange={(e) => setEditingCourse({ ...editingCourse, title: e.target.value })} />
                   </div>
                 </div>
-                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                  <Button variant="ghost" size="sm" onClick={() => { setEditingModule(mod); setModuleDialogOpen(true); }}>
-                    <Edit className="w-4 h-4" />
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={() => deleteModule(mod.id)}>
-                    <Trash2 className="w-4 h-4 text-destructive" />
-                  </Button>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Slug (URL)</Label>
+                    <Input value={editingCourse?.slug || ""} onChange={(e) => setEditingCourse({ ...editingCourse, slug: e.target.value.toLowerCase().replace(/\s+/g, "-") })} placeholder="python-backend" />
+                  </div>
+                  <div>
+                    <Label>Til</Label>
+                    <Select value={editingCourse?.language || "python"} onValueChange={(v) => setEditingCourse({ ...editingCourse, language: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="python">Python</SelectItem>
+                        <SelectItem value="javascript">JavaScript</SelectItem>
+                        <SelectItem value="typescript">TypeScript</SelectItem>
+                        <SelectItem value="dart">Dart</SelectItem>
+                        <SelectItem value="java">Java</SelectItem>
+                        <SelectItem value="go">Go</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
+                <div>
+                  <Label>Tavsif</Label>
+                  <Textarea rows={3} value={editingCourse?.description || ""} onChange={(e) => setEditingCourse({ ...editingCourse, description: e.target.value })} />
+                </div>
+                <div className="grid grid-cols-2 gap-3 items-end">
+                  <div>
+                    <Label>Tartib</Label>
+                    <Input type="number" value={editingCourse?.sort_order ?? 0} onChange={(e) => setEditingCourse({ ...editingCourse, sort_order: +e.target.value })} />
+                  </div>
+                  <div className="flex items-center gap-2 pb-2">
+                    <Switch checked={editingCourse?.is_published || false} onCheckedChange={(v) => setEditingCourse({ ...editingCourse, is_published: v })} />
+                    <Label>Chop etilgan</Label>
+                  </div>
+                </div>
+                <Button className="w-full" onClick={saveCourse}>Saqlash</Button>
               </div>
+            </DialogContent>
+          </Dialog>
+        </div>
 
-              {expanded && (
-                <div className="border-t border-border">
-                  {modLessons.map((lesson) => (
-                    <div key={lesson.id} className="flex items-center justify-between px-4 py-2 border-b border-border/30 last:border-0 hover:bg-secondary/20">
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs text-muted-foreground w-6">{lesson.sort_order}</span>
-                        <span className="text-sm text-foreground">{lesson.title}</span>
-                        {lesson.is_free && <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/20 text-primary">Bepul</span>}
-                        {lesson.video_url && <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent/20 text-accent">Video</span>}
+        <div className="flex flex-wrap gap-2">
+          {courses.map((c) => (
+            <div
+              key={c.id}
+              className={`flex items-center gap-1 rounded-lg border transition-colors ${
+                selectedCourseId === c.id ? "border-primary bg-primary/10" : "border-border bg-card hover:border-muted-foreground/30"
+              }`}
+            >
+              <button
+                onClick={() => setSelectedCourseId(c.id)}
+                className="flex items-center gap-2 px-3 py-2 text-sm"
+              >
+                <span className="text-lg">{c.icon}</span>
+                <span className="font-medium text-foreground">{c.title}</span>
+                {!c.is_published && <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">Qoralama</span>}
+              </button>
+              <div className="flex items-center pr-1">
+                <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => togglePublish(c)} title={c.is_published ? "Yashirish" : "Chop etish"}>
+                  {c.is_published ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </Button>
+                <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => { setEditingCourse(c); setCourseDialogOpen(true); }}>
+                  <Edit className="w-3.5 h-3.5" />
+                </Button>
+                <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => deleteCourse(c.id)}>
+                  <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Modules for selected course */}
+      {selectedCourse && (
+        <>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-foreground">
+              {selectedCourse.icon} {selectedCourse.title} — modullar
+            </h2>
+            <Dialog open={moduleDialogOpen} onOpenChange={setModuleDialogOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm" className="gap-1" onClick={() => setEditingModule({})}>
+                  <Plus className="w-4 h-4" /> Modul qo'shish
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-card border-border">
+                <DialogHeader>
+                  <DialogTitle>{editingModule?.id ? "Modulni tahrirlash" : "Yangi modul"}</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label>Nomi</Label>
+                    <Input value={editingModule?.title || ""} onChange={(e) => setEditingModule({ ...editingModule, title: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label>Bosqich</Label>
+                    <Select value={editingModule?.tier || ""} onValueChange={(v) => setEditingModule({ ...editingModule, tier: v })}>
+                      <SelectTrigger><SelectValue placeholder="Tanlang" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="basic">Boshlang'ich</SelectItem>
+                        <SelectItem value="intermediate">O'rta</SelectItem>
+                        <SelectItem value="advanced">Yuqori</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Oy</Label>
+                      <Input type="number" value={editingModule?.month || 1} onChange={(e) => setEditingModule({ ...editingModule, month: +e.target.value })} />
+                    </div>
+                    <div>
+                      <Label>Tartib</Label>
+                      <Input type="number" value={editingModule?.sort_order || 0} onChange={(e) => setEditingModule({ ...editingModule, sort_order: +e.target.value })} />
+                    </div>
+                  </div>
+                  <Button className="w-full" onClick={saveModule}>Saqlash</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          <div className="space-y-3">
+            {modules.map((mod) => {
+              const modLessons = lessons.filter((l) => l.module_id === mod.id);
+              const expanded = expandedModule === mod.id;
+              return (
+                <Card key={mod.id} className="glass-card overflow-hidden">
+                  <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-secondary/30" onClick={() => setExpandedModule(expanded ? null : mod.id)}>
+                    <div className="flex items-center gap-3">
+                      {expanded ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
+                      <BookOpen className="w-4 h-4 text-primary" />
+                      <div>
+                        <p className="font-medium text-foreground">{mod.month}-oy: {mod.title}</p>
+                        <p className="text-xs text-muted-foreground">{tierLabel[mod.tier]} · {modLessons.length} ta dars</p>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="sm" onClick={() => { setEditingLesson(lesson); setLessonDialogOpen(true); }}>
-                          <Edit className="w-3 h-3" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => deleteLesson(lesson.id)}>
-                          <Trash2 className="w-3 h-3 text-destructive" />
+                    </div>
+                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                      <Button variant="ghost" size="sm" onClick={() => { setEditingModule(mod); setModuleDialogOpen(true); }}>
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => deleteModule(mod.id)}>
+                        <Trash2 className="w-4 h-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {expanded && (
+                    <div className="border-t border-border">
+                      {modLessons.map((lesson) => (
+                        <div key={lesson.id} className="flex items-center justify-between px-4 py-2 border-b border-border/30 last:border-0 hover:bg-secondary/20">
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs text-muted-foreground w-6">{lesson.sort_order}</span>
+                            <span className="text-sm text-foreground">{lesson.title}</span>
+                            {lesson.is_free && <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/20 text-primary">Bepul</span>}
+                            {lesson.video_url && <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent/20 text-accent">Video</span>}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Button variant="ghost" size="sm" onClick={() => { setEditingLesson(lesson); setLessonDialogOpen(true); }}>
+                              <Edit className="w-3 h-3" />
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => deleteLesson(lesson.id)}>
+                              <Trash2 className="w-3 h-3 text-destructive" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                      <div className="p-3">
+                        <Button variant="outline" size="sm" className="gap-1 w-full" onClick={() => { setEditingLesson({ module_id: mod.id, sort_order: modLessons.length + 1 }); setLessonDialogOpen(true); }}>
+                          <Plus className="w-3 h-3" /> Dars qo'shish
                         </Button>
                       </div>
                     </div>
-                  ))}
-                  <div className="p-3">
-                    <Button variant="outline" size="sm" className="gap-1 w-full" onClick={() => { setEditingLesson({ module_id: mod.id, sort_order: modLessons.length + 1 }); setLessonDialogOpen(true); }}>
-                      <Plus className="w-3 h-3" /> Dars qo'shish
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </Card>
-          );
-        })}
+                  )}
+                </Card>
+              );
+            })}
 
-        {modules.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground">
-            <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-50" />
-            <p>Hozircha modullar yo'q. Birinchi modulni qo'shing!</p>
+            {modules.length === 0 && (
+              <div className="text-center py-12 text-muted-foreground">
+                <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>Bu kursda hali modullar yo'q. Birinchi modulni qo'shing!</p>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </>
+      )}
 
       {/* Lesson Dialog */}
       <Dialog open={lessonDialogOpen} onOpenChange={setLessonDialogOpen}>
@@ -249,6 +432,10 @@ const AdminContent = () => {
                 <Switch checked={editingLesson?.is_free || false} onCheckedChange={(v) => setEditingLesson({ ...editingLesson, is_free: v })} />
                 <Label>Bepul dars</Label>
               </div>
+            </div>
+            <div>
+              <Label>Til (ixtiyoriy — kursdan farqli bo'lsa)</Label>
+              <Input placeholder={`Default: ${selectedCourse?.language || "python"}`} value={editingLesson?.language || ""} onChange={(e) => setEditingLesson({ ...editingLesson, language: e.target.value })} />
             </div>
             <div>
               <Label>YouTube video havolasi</Label>
