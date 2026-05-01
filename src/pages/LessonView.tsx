@@ -14,7 +14,7 @@ import CelebrationOverlay from "@/components/CelebrationOverlay";
 import PracticeTasks from "@/components/PracticeTasks";
 
 const LessonView = () => {
-  const { user, isAdmin, activeTier } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { id } = useParams();
   const lessonId = parseInt(id || "1");
   const navigate = useNavigate();
@@ -27,6 +27,8 @@ const LessonView = () => {
     video_url: string | null;
     duration: string | null;
     sort_order: number;
+    language: string | null;
+    course_language?: string;
   } | null>(null);
   const [totalLessons, setTotalLessons] = useState(108);
   const [loading, setLoading] = useState(true);
@@ -58,24 +60,49 @@ const LessonView = () => {
       const [{ data: lessonData }, { count }] = await Promise.all([
         supabase
           .from("lessons")
-          .select("title, content_md, starter_code, solution_code, video_url, duration, sort_order, module_id")
+          .select("title, content_md, starter_code, solution_code, video_url, duration, sort_order, module_id, language")
           .eq("id", lessonId)
           .single(),
         supabase.from("lessons").select("id", { count: "exact", head: true }),
       ]);
 
-      // Check tier access
+      // Get course language for AI checker
+      let courseLanguage = "python";
       if (lessonData) {
         const { data: modData } = await supabase
           .from("modules")
-          .select("tier")
+          .select("course_id")
           .eq("id", lessonData.module_id)
           .single();
         if (modData) {
+          const { data: courseData } = await supabase
+            .from("courses")
+            .select("language")
+            .eq("id", modData.course_id)
+            .single();
+          courseLanguage = courseData?.language || "python";
+        }
+      }
+
+      // Check tier access via user_course_access (per-course tier)
+      if (lessonData && user) {
+        const { data: modData } = await supabase
+          .from("modules")
+          .select("tier, course_id")
+          .eq("id", lessonData.module_id)
+          .single();
+        if (modData) {
+          const { data: accessRow } = await supabase
+            .from("user_course_access")
+            .select("tier")
+            .eq("user_id", user.id)
+            .eq("course_id", modData.course_id)
+            .maybeSingle();
+          const userTier = accessRow?.tier || "free";
           const tierOrder = ["free", "intermediate", "advanced"];
-          const userIdx = tierOrder.indexOf(activeTier);
+          const userIdx = tierOrder.indexOf(userTier);
           const lessonIdx = tierOrder.indexOf(modData.tier === "basic" ? "free" : modData.tier);
-          if (userIdx < lessonIdx) {
+          if (userIdx < lessonIdx && !isAdmin) {
             toast.error("Bu dars premium. To'lov qiling yoki admin bilan bog'laning.");
             navigate("/syllabus");
             return;
@@ -83,7 +110,7 @@ const LessonView = () => {
         }
       }
 
-      setLesson(lessonData);
+      setLesson(lessonData ? { ...lessonData, course_language: courseLanguage } : null);
       setTotalLessons(count || 108);
       setLoading(false);
     };
@@ -150,9 +177,9 @@ const LessonView = () => {
     setOutput("🔍 Tekshirilmoqda...");
 
     try {
-      // 1. AI orqali tekshirish
+      const language = lesson?.language || lesson?.course_language || "python";
       const { data: checkResult, error: checkError } = await supabase.functions.invoke("check-code", {
-        body: { taskDescription, studentCode: code },
+        body: { taskDescription, studentCode: code, language },
       });
 
       if (checkError) throw checkError;

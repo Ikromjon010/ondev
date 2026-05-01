@@ -6,12 +6,23 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+const languageNames: Record<string, string> = {
+  python: "Python",
+  javascript: "JavaScript",
+  typescript: "TypeScript",
+  dart: "Dart",
+  java: "Java",
+  go: "Go",
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS")
     return new Response(null, { headers: corsHeaders });
 
   try {
-    const { taskDescription, studentCode } = await req.json();
+    const { taskDescription, studentCode, language } = await req.json();
+    const lang = (language || "python").toLowerCase();
+    const langName = languageNames[lang] || "Python";
 
     if (!taskDescription || !studentCode?.trim()) {
       return new Response(
@@ -26,19 +37,19 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const systemPrompt = `Sen Python o'qituvchisisан. Talaba topshiriq yechimini yubordi. 
-Topshiriq tavsifi va talaba kodi beriladi. 
+    const systemPrompt = `Sen ${langName} o'qituvchisisan. Talaba topshiriq yechimini yubordi.
+Topshiriq tavsifi va talaba kodi beriladi.
 
 MUHIM QOIDALAR:
 - Talaba kodi topshiriqdagi BARCHA talablarni bajarishi kerak
 - Agar kodda faqat kommentariylar bo'lsa va hech qanday amaliy kod yozilmagan bo'lsa — bu NOTO'G'RI
 - Agar topshiriqda 3 ta ish bo'lsa, hammasi bajarilishi kerak
-- Faqat print, o'zgaruvchi, funksiya kabi amaliy Python kodi hisoblangan
+- Faqat amaliy ${langName} kodi hisoblangan (o'zgaruvchilar, funksiyalar, chiqarish va h.k.)
 
 Javobni FAQAT JSON formatda ber:
 {"correct": true/false, "feedback": "qisqa izoh uzbek tilida"}`;
 
-    const userPrompt = `TOPSHIRIQ:\n${taskDescription}\n\nTALABA KODI:\n\`\`\`python\n${studentCode}\n\`\`\``;
+    const userPrompt = `TOPSHIRIQ:\n${taskDescription}\n\nTALABA KODI:\n\`\`\`${lang}\n${studentCode}\n\`\`\``;
 
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -73,7 +84,6 @@ Javobni FAQAT JSON formatda ber:
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || "";
 
-    // Parse JSON from response
     const jsonMatch = content.match(/\{[\s\S]*?\}/);
     if (jsonMatch) {
       const parsed = JSON.parse(jsonMatch[0]);
