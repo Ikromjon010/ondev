@@ -27,6 +27,8 @@ const LessonView = () => {
     video_url: string | null;
     duration: string | null;
     sort_order: number;
+    language: string | null;
+    course_language?: string;
   } | null>(null);
   const [totalLessons, setTotalLessons] = useState(108);
   const [loading, setLoading] = useState(true);
@@ -58,11 +60,29 @@ const LessonView = () => {
       const [{ data: lessonData }, { count }] = await Promise.all([
         supabase
           .from("lessons")
-          .select("title, content_md, starter_code, solution_code, video_url, duration, sort_order, module_id")
+          .select("title, content_md, starter_code, solution_code, video_url, duration, sort_order, module_id, language")
           .eq("id", lessonId)
           .single(),
         supabase.from("lessons").select("id", { count: "exact", head: true }),
       ]);
+
+      // Get course language for AI checker
+      let courseLanguage = "python";
+      if (lessonData) {
+        const { data: modData } = await supabase
+          .from("modules")
+          .select("course_id")
+          .eq("id", lessonData.module_id)
+          .single();
+        if (modData) {
+          const { data: courseData } = await supabase
+            .from("courses")
+            .select("language")
+            .eq("id", modData.course_id)
+            .single();
+          courseLanguage = courseData?.language || "python";
+        }
+      }
 
       // Check tier access via user_course_access (per-course tier)
       if (lessonData && user) {
