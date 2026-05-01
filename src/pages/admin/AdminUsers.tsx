@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,11 @@ interface UserProfile {
   created_at: string;
 }
 
+interface CurrentLessonInfo {
+  id: number;
+  title: string;
+}
+
 const TIER_LABELS: Record<string, string> = {
   free: "Bepul",
   intermediate: "O'rta",
@@ -50,6 +56,7 @@ const TIER_LABELS: Record<string, string> = {
 const AdminUsers = () => {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [adminIds, setAdminIds] = useState<Set<string>>(new Set());
+  const [currentLessons, setCurrentLessons] = useState<Record<string, CurrentLessonInfo>>({});
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<UserProfile | null>(null);
@@ -65,8 +72,48 @@ const AdminUsers = () => {
       .from("user_roles")
       .select("user_id, role");
 
-    setUsers((profiles as UserProfile[]) || []);
+    const profileList = (profiles as UserProfile[]) || [];
+    setUsers(profileList);
     setAdminIds(new Set(roles?.filter((r) => r.role === "admin").map((r) => r.user_id) || []));
+
+    // Har bir user uchun joriy darsni hisoblash
+    if (profileList.length > 0) {
+      const userIds = profileList.map((u) => u.user_id);
+      const { data: progress } = await supabase
+        .from("user_progress")
+        .select("user_id, lesson_id")
+        .in("user_id", userIds)
+        .eq("completed", true);
+
+      // Har bir userning oxirgi tugatgan lesson_id si
+      const lastByUser: Record<string, number> = {};
+      (progress || []).forEach((p) => {
+        if (!lastByUser[p.user_id] || p.lesson_id > lastByUser[p.user_id]) {
+          lastByUser[p.user_id] = p.lesson_id;
+        }
+      });
+
+      // Barcha darslarni olib, mapping qilish
+      const { data: lessons } = await supabase
+        .from("lessons")
+        .select("id, title")
+        .order("id", { ascending: true });
+      const lessonList = lessons || [];
+
+      const result: Record<string, CurrentLessonInfo> = {};
+      profileList.forEach((u) => {
+        const lastId = lastByUser[u.user_id];
+        if (lastId === undefined) {
+          // hech narsa tugatmagan — birinchi dars
+          if (lessonList[0]) result[u.user_id] = lessonList[0];
+        } else {
+          const next = lessonList.find((l) => l.id > lastId);
+          result[u.user_id] = next || lessonList.find((l) => l.id === lastId) || lessonList[0];
+        }
+      });
+      setCurrentLessons(result);
+    }
+
     setLoading(false);
   };
 
@@ -159,6 +206,7 @@ const AdminUsers = () => {
                   <th className="text-left text-xs font-medium text-muted-foreground p-4">Telefon</th>
                   <th className="text-left text-xs font-medium text-muted-foreground p-4">Rol</th>
                   <th className="text-left text-xs font-medium text-muted-foreground p-4">Kurs darajasi</th>
+                  <th className="text-left text-xs font-medium text-muted-foreground p-4">Joriy dars</th>
                   <th className="text-left text-xs font-medium text-muted-foreground p-4">Holat</th>
                   <th className="text-left text-xs font-medium text-muted-foreground p-4">Sana</th>
                   <th className="text-right text-xs font-medium text-muted-foreground p-4">Amallar</th>
@@ -166,9 +214,9 @@ const AdminUsers = () => {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">Yuklanmoqda...</td></tr>
+                  <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">Yuklanmoqda...</td></tr>
                 ) : filtered.length === 0 ? (
-                  <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">Foydalanuvchilar topilmadi</td></tr>
+                  <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">Foydalanuvchilar topilmadi</td></tr>
                 ) : (
                   filtered.map((user) => (
                     <tr key={user.id} className={`border-b border-border/50 hover:bg-secondary/30 ${user.is_blocked ? 'opacity-60' : ''}`}>
@@ -202,6 +250,22 @@ const AdminUsers = () => {
                             <SelectItem value="advanced">🚀 Yuqori</SelectItem>
                           </SelectContent>
                         </Select>
+                      </td>
+                      <td className="p-4">
+                        {currentLessons[user.user_id] ? (
+                          <Link
+                            to={`/lesson/${currentLessons[user.user_id].id}`}
+                            className="text-xs text-accent hover:underline"
+                            title={currentLessons[user.user_id].title}
+                          >
+                            #{currentLessons[user.user_id].id} —{" "}
+                            {currentLessons[user.user_id].title.length > 28
+                              ? currentLessons[user.user_id].title.slice(0, 28) + "…"
+                              : currentLessons[user.user_id].title}
+                          </Link>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
                       </td>
                       <td className="p-4">
                         {user.is_blocked ? (

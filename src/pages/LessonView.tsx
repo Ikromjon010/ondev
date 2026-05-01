@@ -257,18 +257,41 @@ const LessonView = () => {
       <main className="flex-1 container px-4 py-4">
         {activeTab === "video" && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-4xl mx-auto">
-            <div className="glass-card aspect-video flex items-center justify-center relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5" />
-              <div className="text-center relative z-10">
-                <div className="w-20 h-20 rounded-full bg-accent/20 flex items-center justify-center mx-auto mb-4 cursor-pointer hover:bg-accent/30 transition-colors glow-accent">
-                  <Play className="w-8 h-8 text-accent ml-1" />
+            {(() => {
+              const url = lesson?.video_url || "";
+              // Extract YouTube video id from various URL formats
+              const ytMatch = url.match(
+                /(?:youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/
+              );
+              const videoId = ytMatch?.[1];
+              if (videoId) {
+                return (
+                  <div className="glass-card aspect-video overflow-hidden p-0">
+                    <iframe
+                      className="w-full h-full"
+                      src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`}
+                      title={lessonTitle}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                    />
+                  </div>
+                );
+              }
+              return (
+                <div className="glass-card aspect-video flex items-center justify-center relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5" />
+                  <div className="text-center relative z-10">
+                    <div className="w-20 h-20 rounded-full bg-accent/20 flex items-center justify-center mx-auto mb-4 glow-accent">
+                      <Play className="w-8 h-8 text-accent ml-1" />
+                    </div>
+                    <p className="text-foreground font-medium">{lessonTitle}</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Video tayyorlanmoqda • {lesson?.duration || "15min"}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-foreground font-medium">{lessonTitle}</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {lesson?.video_url ? "Video mavjud" : "Video tayyorlanmoqda"} • {lesson?.duration || "15min"}
-                </p>
-              </div>
-            </div>
+              );
+            })()}
           </motion.div>
         )}
 

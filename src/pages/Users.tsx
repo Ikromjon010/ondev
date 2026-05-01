@@ -107,7 +107,10 @@ const Users = () => {
               return (
                 <Card key={u.user_id} className="glass-card">
                   <CardContent className="flex items-center justify-between py-3 px-4">
-                    <div className="flex items-center gap-3">
+                    <Link
+                      to={`/users/${u.user_id}`}
+                      className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity"
+                    >
                       <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
                         {u.full_name?.charAt(0) || "?"}
                       </div>
@@ -117,7 +120,7 @@ const Users = () => {
                           <span className="text-xs">{tierBadge[u.active_tier] || ""}</span>
                         </p>
                       </div>
-                    </div>
+                    </Link>
                     <Button
                       size="sm"
                       variant={isFollowing ? "outline" : "default"}
