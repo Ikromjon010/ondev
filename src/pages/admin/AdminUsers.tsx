@@ -205,6 +205,7 @@ const AdminUsers = () => {
                   <th className="text-left text-xs font-medium text-muted-foreground p-4">Telefon</th>
                   <th className="text-left text-xs font-medium text-muted-foreground p-4">Rol</th>
                   <th className="text-left text-xs font-medium text-muted-foreground p-4">Kurs darajasi</th>
+                  <th className="text-left text-xs font-medium text-muted-foreground p-4">Joriy dars</th>
                   <th className="text-left text-xs font-medium text-muted-foreground p-4">Holat</th>
                   <th className="text-left text-xs font-medium text-muted-foreground p-4">Sana</th>
                   <th className="text-right text-xs font-medium text-muted-foreground p-4">Amallar</th>
@@ -212,9 +213,9 @@ const AdminUsers = () => {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">Yuklanmoqda...</td></tr>
+                  <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">Yuklanmoqda...</td></tr>
                 ) : filtered.length === 0 ? (
-                  <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">Foydalanuvchilar topilmadi</td></tr>
+                  <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">Foydalanuvchilar topilmadi</td></tr>
                 ) : (
                   filtered.map((user) => (
                     <tr key={user.id} className={`border-b border-border/50 hover:bg-secondary/30 ${user.is_blocked ? 'opacity-60' : ''}`}>
