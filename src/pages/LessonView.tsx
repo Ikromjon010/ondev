@@ -110,7 +110,7 @@ const LessonView = () => {
         }
       }
 
-      setLesson(lessonData);
+      setLesson(lessonData ? { ...lessonData, course_language: courseLanguage } : null);
       setTotalLessons(count || 108);
       setLoading(false);
     };
