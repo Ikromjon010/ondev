@@ -251,6 +251,22 @@ const AdminUsers = () => {
                         </Select>
                       </td>
                       <td className="p-4">
+                        {currentLessons[user.user_id] ? (
+                          <Link
+                            to={`/lesson/${currentLessons[user.user_id].id}`}
+                            className="text-xs text-accent hover:underline"
+                            title={currentLessons[user.user_id].title}
+                          >
+                            #{currentLessons[user.user_id].id} —{" "}
+                            {currentLessons[user.user_id].title.length > 28
+                              ? currentLessons[user.user_id].title.slice(0, 28) + "…"
+                              : currentLessons[user.user_id].title}
+                          </Link>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                      </td>
+                      <td className="p-4">
                         {user.is_blocked ? (
                           <Badge variant="destructive" className="text-xs">Bloklangan</Badge>
                         ) : (
