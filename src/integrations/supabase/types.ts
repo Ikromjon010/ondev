@@ -49,6 +49,7 @@ export type Database = {
       }
       certificates: {
         Row: {
+          course_id: string | null
           created_at: string
           credential_id: string
           id: string
@@ -57,6 +58,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          course_id?: string | null
           created_at?: string
           credential_id: string
           id?: string
@@ -65,12 +67,63 @@ export type Database = {
           user_id: string
         }
         Update: {
+          course_id?: string | null
           created_at?: string
           credential_id?: string
           id?: string
           issued_at?: string
           student_name?: string
           user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certificates_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      courses: {
+        Row: {
+          color: string
+          created_at: string
+          description: string | null
+          icon: string
+          id: string
+          is_published: boolean
+          language: string
+          slug: string
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          description?: string | null
+          icon?: string
+          id?: string
+          is_published?: boolean
+          language?: string
+          slug: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          description?: string | null
+          icon?: string
+          id?: string
+          is_published?: boolean
+          language?: string
+          slug?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -102,6 +155,7 @@ export type Database = {
           duration: string | null
           id: number
           is_free: boolean
+          language: string | null
           module_id: number
           solution_code: string | null
           sort_order: number
@@ -116,6 +170,7 @@ export type Database = {
           duration?: string | null
           id?: number
           is_free?: boolean
+          language?: string | null
           module_id: number
           solution_code?: string | null
           sort_order?: number
@@ -130,6 +185,7 @@ export type Database = {
           duration?: string | null
           id?: number
           is_free?: boolean
+          language?: string | null
           module_id?: number
           solution_code?: string | null
           sort_order?: number
@@ -150,6 +206,7 @@ export type Database = {
       }
       modules: {
         Row: {
+          course_id: string
           created_at: string
           id: number
           month: number
@@ -159,6 +216,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          course_id: string
           created_at?: string
           id?: number
           month: number
@@ -168,6 +226,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          course_id?: string
           created_at?: string
           id?: number
           month?: number
@@ -176,11 +235,20 @@ export type Database = {
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "modules_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payments: {
         Row: {
           amount: number
+          course_id: string | null
           created_at: string
           id: string
           payment_method: string
@@ -192,6 +260,7 @@ export type Database = {
         }
         Insert: {
           amount: number
+          course_id?: string | null
           created_at?: string
           id?: string
           payment_method: string
@@ -203,6 +272,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          course_id?: string | null
           created_at?: string
           id?: string
           payment_method?: string
@@ -212,7 +282,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "payments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -275,6 +353,41 @@ export type Database = {
             columns: ["badge_id"]
             isOneToOne: false
             referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_course_access: {
+        Row: {
+          course_id: string
+          granted_at: string
+          id: string
+          tier: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          course_id: string
+          granted_at?: string
+          id?: string
+          tier?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          course_id?: string
+          granted_at?: string
+          id?: string
+          tier?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_course_access_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
             referencedColumns: ["id"]
           },
         ]
