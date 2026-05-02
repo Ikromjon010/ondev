@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, BookOpen, Code2, GraduationCap, LogOut, Shield, Users, Library } from "lucide-react";
+import { LayoutDashboard, BookOpen, Code2, GraduationCap, LogOut, Shield, Users, Library, Presentation } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useCurrentLesson } from "@/hooks/useCurrentLesson";
@@ -7,7 +7,7 @@ import { useCurrentLesson } from "@/hooks/useCurrentLesson";
 const AppHeader = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, isAdmin, signOut, profile } = useAuth();
+  const { user, isAdmin, isInstructor, signOut, profile } = useAuth();
   const { currentLessonId } = useCurrentLesson();
 
   const navItems = [
@@ -52,6 +52,19 @@ const AppHeader = () => {
               </Link>
             );
           })}
+          {(isInstructor || isAdmin) && (
+            <Link
+              to="/teach"
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                location.pathname.startsWith("/teach")
+                  ? "bg-accent/15 text-accent"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+              }`}
+            >
+              <Presentation className="w-4 h-4" />
+              Ustoz
+            </Link>
+          )}
           {isAdmin && (
             <Link
               to="/admin"
