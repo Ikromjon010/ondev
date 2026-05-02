@@ -2,7 +2,7 @@ import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import {
-  Code2,
+  // Code2 removed
   GraduationCap,
   Trophy,
   Laptop,
@@ -13,29 +13,32 @@ import {
   Github,
   Send,
   MessageCircle,
+  Sparkles,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useCourses } from "@/hooks/useCourses";
 
 const features = [
   {
     icon: Laptop,
     title: "Brauzerda IDE",
-    desc: "Monaco muharririga asoslangan brauzer ichida Python kodlarni yozing va ishga tushiring.",
+    desc: "Monaco muharririga asoslangan brauzer ichida kod yozing va ishga tushiring — o'rnatish kerak emas.",
   },
   {
     icon: FolderGit2,
     title: "Amaliy loyihalar",
-    desc: "3 ta haqiqiy loyiha yarating: To-Do Ilova, E-commerce va Real-time Chat.",
+    desc: "Har bir kurs oxirida real loyiha qiling: Backend, Frontend, Mobile va boshqalar.",
   },
   {
     icon: Gamepad2,
     title: "O'yinlashtirilgan ta'lim",
-    desc: "Ball to'plang, kunlik faollikni saqlang va o'rganish jarayonida reyting ko'taring.",
+    desc: "Ball to'plang, kunlik faollikni saqlang va o'rganish jarayonida reytingda ko'taring.",
   },
   {
     icon: Trophy,
-    title: "Reyting va yutuqlar",
-    desc: "Boshqa o'quvchilar bilan raqobatlashing va vazifalarni bajarganda yutuq nishonlari oling.",
+    title: "Sertifikat & reyting",
+    desc: "Boshqa o'quvchilar bilan raqobatlashing va kursni tugatganingizda raqamli sertifikat oling.",
   },
 ];
 
@@ -45,11 +48,10 @@ const pricingTiers = [
     months: "1–2 oylar",
     price: "Bepul",
     isFree: true,
-    lessons: 24,
-    project: "CLI To-Do Ilova",
+    project: "Kirish loyihasi",
     features: [
-      "Python asoslari",
-      "24 ta interaktiv dars",
+      "Tilning asoslari",
+      "Interaktiv darslar",
       "Brauzerda IDE",
       "Jamiyatga kirish",
     ],
@@ -60,13 +62,12 @@ const pricingTiers = [
     price: "699,000 UZS",
     isFree: false,
     popular: true,
-    lessons: 48,
-    project: "E-commerce Backend",
+    project: "Asosiy loyiha",
     features: [
-      "Django & REST Framework",
-      "48 ta interaktiv dars",
-      "E-commerce loyiha",
-      "DevOps & Docker asoslari",
+      "Framework va kutubxonalar",
+      "Mustahkam amaliyot",
+      "Real loyiha qurilishi",
+      "Best practices",
       "Ustuvor qo'llab-quvvatlash",
     ],
   },
@@ -75,13 +76,12 @@ const pricingTiers = [
     months: "7–9 oylar",
     price: "499,000 UZS",
     isFree: false,
-    lessons: 36,
-    project: "Real-time Chat Ilova",
+    project: "Final loyiha",
     features: [
-      "WebSockets & Channels",
-      "36 ta interaktiv dars",
-      "Real-time Chat loyiha",
-      "Bulutga joylashtirish",
+      "Murakkab arxitektura",
+      "Production darajadagi kod",
+      "Joylashtirish va deploy",
+      "Mock interview",
       "Yakuniy sertifikat",
     ],
   },
@@ -98,9 +98,13 @@ const fadeUp = {
 
 const Index = () => {
   const { user, loading } = useAuth();
-  
+  const { courses } = useCourses({ onlyPublished: false });
+
   if (!loading && user) return <Navigate to="/dashboard" replace />;
-  
+
+  // Show all but mark unpublished as "tez orada"
+  const visibleCourses = courses.slice(0, 6);
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
@@ -115,6 +119,9 @@ const Index = () => {
             </span>
           </Link>
           <nav className="flex items-center gap-2">
+            <a href="#courses" className="hidden sm:inline text-sm text-muted-foreground hover:text-foreground px-2">
+              Kurslar
+            </a>
             <Button variant="ghost" size="sm" asChild>
               <Link to="/login">Kirish</Link>
             </Button>
@@ -139,12 +146,13 @@ const Index = () => {
               🚀 Bepul boshlang — karta talab qilinmaydi
             </span>
             <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-6">
-              9 oyda{" "}
-              <span className="text-primary">Python & Django</span>{" "}
-              Backend Muhandis bo'ling
+              Brauzerda{" "}
+              <span className="text-primary">dasturlash</span>{" "}
+              o'rganing
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
-              108 ta interaktiv dars, 3 ta amaliy loyiha va o'yinlashtirilgan ta'lim tajribasi bilan backend dasturlashni o'rganing — hammasi brauzeringizda.
+              Backend, Frontend, Mobile va boshqa yo'nalishlardagi interaktiv kurslar.
+              Nazariya, video, amaliy vazifalar va real loyihalar — hammasi bitta platformada.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button size="lg" className="text-base gap-2" asChild>
@@ -153,10 +161,75 @@ const Index = () => {
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="text-base" asChild>
-                <Link to="/syllabus">Kurs dasturini ko'rish</Link>
+                <a href="#courses">Kurslarni ko'rish</a>
               </Button>
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      {/* Courses grid */}
+      <section id="courses" className="py-20 border-t border-border">
+        <div className="container px-4">
+          <div className="text-center mb-14">
+            <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary mb-3">
+              <Sparkles className="w-3.5 h-3.5" /> MAVJUD KURSLAR
+            </span>
+            <h2 className="text-3xl font-bold mb-3">O'zingizga mos yo'nalishni tanlang</h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              Har bir kurs — noldan professional darajagacha bosqichma-bosqich yo'l.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
+            {visibleCourses.map((c, i) => (
+              <motion.div
+                key={c.id}
+                custom={i}
+                variants={fadeUp}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                className={`glass-card p-6 flex flex-col ${!c.is_published ? "opacity-70" : ""}`}
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="text-5xl">{c.icon}</div>
+                  {!c.is_published ? (
+                    <span className="text-[10px] uppercase font-bold px-2 py-1 rounded bg-muted text-muted-foreground flex items-center gap-1">
+                      <Lock className="w-3 h-3" /> Tez orada
+                    </span>
+                  ) : (
+                    <span className="text-[10px] uppercase font-bold px-2 py-1 rounded bg-primary/20 text-primary">
+                      Faol
+                    </span>
+                  )}
+                </div>
+                <h3 className="text-lg font-bold text-foreground mb-1">{c.title}</h3>
+                <p className="text-xs uppercase text-muted-foreground mb-3 font-mono">
+                  {c.language}
+                </p>
+                <p className="text-sm text-muted-foreground flex-1 mb-4">
+                  {c.description || "Bu kurs haqida tez orada batafsil ma'lumot bo'ladi."}
+                </p>
+                <Button
+                  asChild
+                  variant={c.is_published ? "default" : "outline"}
+                  disabled={!c.is_published}
+                  className="w-full gap-1"
+                >
+                  <Link to={c.is_published ? "/register" : "#courses"}>
+                    {c.is_published ? "Boshlash" : "Tez orada"}
+                    {c.is_published && <ArrowRight className="w-4 h-4" />}
+                  </Link>
+                </Button>
+              </motion.div>
+            ))}
+            {visibleCourses.length === 0 && (
+              <div className="col-span-full text-center text-muted-foreground py-8">
+                Kurslar tez orada qo'shiladi.
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
@@ -166,7 +239,7 @@ const Index = () => {
           <div className="text-center mb-14">
             <h2 className="text-3xl font-bold mb-3">Nima uchun ondev.uz da o'rganish kerak?</h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              Noldan professional backend dasturchigacha bo'lish uchun kerak bo'lgan hamma narsa.
+              Noldan professional dasturchigacha bo'lish uchun kerak bo'lgan hamma narsa.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
@@ -230,7 +303,7 @@ const Index = () => {
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground mb-2">
-                  {tier.lessons} ta dars · Loyiha: {tier.project}
+                  Loyiha: {tier.project}
                 </p>
                 <ul className="flex-1 space-y-2 mb-6">
                   {tier.features.map((f) => (
@@ -252,6 +325,9 @@ const Index = () => {
               </motion.div>
             ))}
           </div>
+          <p className="text-center text-xs text-muted-foreground mt-6">
+            * Narxlar har bir kurs uchun alohida amal qiladi.
+          </p>
         </div>
       </section>
 
@@ -268,7 +344,7 @@ const Index = () => {
               </span>
             </div>
             <div className="flex gap-6 text-sm text-muted-foreground">
-              <Link to="/syllabus" className="hover:text-foreground transition-colors">Kurs dasturi</Link>
+              <a href="#courses" className="hover:text-foreground transition-colors">Kurslar</a>
               <a href="#" className="hover:text-foreground transition-colors">Blog</a>
               <a href="#" className="hover:text-foreground transition-colors">Aloqa</a>
             </div>

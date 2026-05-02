@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Search, Shield, ShieldOff, Ban, Unlock, Trash2, Crown } from "lucide-react";
+import { Search, Shield, ShieldOff, Ban, Unlock, Trash2, Crown, Presentation } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
@@ -56,6 +56,7 @@ const TIER_LABELS: Record<string, string> = {
 const AdminUsers = () => {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [adminIds, setAdminIds] = useState<Set<string>>(new Set());
+  const [instructorIds, setInstructorIds] = useState<Set<string>>(new Set());
   const [currentLessons, setCurrentLessons] = useState<Record<string, CurrentLessonInfo>>({});
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
@@ -75,6 +76,7 @@ const AdminUsers = () => {
     const profileList = (profiles as UserProfile[]) || [];
     setUsers(profileList);
     setAdminIds(new Set(roles?.filter((r) => r.role === "admin").map((r) => r.user_id) || []));
+    setInstructorIds(new Set(roles?.filter((r) => r.role === "instructor").map((r) => r.user_id) || []));
 
     // Har bir user uchun joriy darsni hisoblash
     if (profileList.length > 0) {
@@ -132,6 +134,22 @@ const AdminUsers = () => {
         .from("user_roles")
         .insert({ user_id: userId, role: "admin" });
       if (!error) { toast.success("Admin huquqi berildi"); fetchUsers(); }
+    }
+  };
+
+  const toggleInstructor = async (userId: string) => {
+    if (instructorIds.has(userId)) {
+      const { error } = await supabase
+        .from("user_roles")
+        .delete()
+        .eq("user_id", userId)
+        .eq("role", "instructor");
+      if (!error) { toast.success("Ustoz huquqi olib tashlandi"); fetchUsers(); }
+    } else {
+      const { error } = await supabase
+        .from("user_roles")
+        .insert({ user_id: userId, role: "instructor" });
+      if (!error) { toast.success("Ustoz huquqi berildi"); fetchUsers(); }
     }
   };
 
@@ -230,11 +248,17 @@ const AdminUsers = () => {
                       </td>
                       <td className="p-4 text-sm text-muted-foreground font-mono">{user.phone || "—"}</td>
                       <td className="p-4">
-                        {adminIds.has(user.user_id) ? (
-                          <Badge variant="default" className="bg-primary/20 text-primary">Admin</Badge>
-                        ) : (
-                          <Badge variant="secondary">Foydalanuvchi</Badge>
-                        )}
+                        <div className="flex flex-wrap gap-1">
+                          {adminIds.has(user.user_id) && (
+                            <Badge variant="default" className="bg-primary/20 text-primary">Admin</Badge>
+                          )}
+                          {instructorIds.has(user.user_id) && (
+                            <Badge variant="default" className="bg-accent/20 text-accent">Ustoz</Badge>
+                          )}
+                          {!adminIds.has(user.user_id) && !instructorIds.has(user.user_id) && (
+                            <Badge variant="secondary">Foydalanuvchi</Badge>
+                          )}
+                        </div>
                       </td>
                       <td className="p-4">
                         <Select
@@ -288,6 +312,13 @@ const AdminUsers = () => {
                                 <><ShieldOff className="w-4 h-4 mr-2" /> Admin olib tashlash</>
                               ) : (
                                 <><Shield className="w-4 h-4 mr-2" /> Admin qilish</>
+                              )}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => toggleInstructor(user.user_id)}>
+                              {instructorIds.has(user.user_id) ? (
+                                <><Presentation className="w-4 h-4 mr-2" /> Ustozlikni olib tashlash</>
+                              ) : (
+                                <><Presentation className="w-4 h-4 mr-2" /> Ustoz qilish</>
                               )}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => toggleBlock(user)}>

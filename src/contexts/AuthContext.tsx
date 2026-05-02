@@ -8,6 +8,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   isAdmin: boolean;
+  isInstructor: boolean;
   activeTier: string;
   profile: { full_name: string; phone: string | null; avatar_url: string | null } | null;
   signOut: () => Promise<void>;
@@ -18,6 +19,7 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   loading: true,
   isAdmin: false,
+  isInstructor: false,
   activeTier: "free",
   profile: null,
   signOut: async () => {},
@@ -30,6 +32,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isInstructor, setIsInstructor] = useState(false);
   const [activeTier, setActiveTier] = useState("free");
   const [profile, setProfile] = useState<AuthContextType["profile"]>(null);
 
@@ -61,10 +64,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               .select("role")
               .eq("user_id", session.user.id);
             setIsAdmin(roleData?.some((r) => r.role === "admin") ?? false);
+            setIsInstructor(roleData?.some((r) => r.role === "instructor") ?? false);
           }, 0);
         } else {
           setProfile(null);
           setIsAdmin(false);
+          setIsInstructor(false);
           setActiveTier("free");
         }
         setLoading(false);
@@ -85,7 +90,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, isAdmin, activeTier, profile, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, isAdmin, isInstructor, activeTier, profile, signOut }}>
       {children}
     </AuthContext.Provider>
   );

@@ -92,6 +92,7 @@ export type Database = {
           description: string | null
           icon: string
           id: string
+          instructor_id: string | null
           is_published: boolean
           language: string
           slug: string
@@ -105,6 +106,7 @@ export type Database = {
           description?: string | null
           icon?: string
           id?: string
+          instructor_id?: string | null
           is_published?: boolean
           language?: string
           slug: string
@@ -118,6 +120,7 @@ export type Database = {
           description?: string | null
           icon?: string
           id?: string
+          instructor_id?: string | null
           is_published?: boolean
           language?: string
           slug?: string
@@ -493,9 +496,21 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_course_instructor: {
+        Args: { _course_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_lesson_instructor: {
+        Args: { _lesson_id: number; _user_id: string }
+        Returns: boolean
+      }
+      is_module_instructor: {
+        Args: { _module_id: number; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      app_role: "admin" | "moderator" | "user"
+      app_role: "admin" | "moderator" | "user" | "instructor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -623,7 +638,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "moderator", "user"],
+      app_role: ["admin", "moderator", "user", "instructor"],
     },
   },
 } as const
