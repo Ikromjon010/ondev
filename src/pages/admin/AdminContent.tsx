@@ -22,6 +22,12 @@ interface Course {
   language: string;
   is_published: boolean;
   sort_order: number;
+  instructor_id: string | null;
+}
+
+interface InstructorOption {
+  user_id: string;
+  full_name: string;
 }
 
 interface Module {
@@ -60,6 +66,19 @@ const AdminContent = () => {
   const [editingLesson, setEditingLesson] = useState<Partial<Lesson> | null>(null);
   const [moduleDialogOpen, setModuleDialogOpen] = useState(false);
   const [lessonDialogOpen, setLessonDialogOpen] = useState(false);
+  const [instructors, setInstructors] = useState<InstructorOption[]>([]);
+
+  const fetchInstructors = async () => {
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("user_id, role")
+      .in("role", ["instructor", "admin"]);
+    const ids = Array.from(new Set((roles || []).map((r: any) => r.user_id)));
+    if (!ids.length) { setInstructors([]); return; }
+    const { data: profs } = await supabase
+      .from("profiles").select("user_id, full_name").in("user_id", ids);
+    setInstructors((profs as InstructorOption[]) || []);
+  };
 
   const fetchCourses = async () => {
     const { data } = await supabase.from("courses").select("*").order("sort_order");
@@ -85,7 +104,7 @@ const AdminContent = () => {
     setLessons((lsns as Lesson[]) || []);
   };
 
-  useEffect(() => { fetchCourses(); }, []);
+  useEffect(() => { fetchCourses(); fetchInstructors(); }, []);
   useEffect(() => { fetchContent(); }, [selectedCourseId]);
 
   const saveCourse = async () => {
@@ -102,6 +121,7 @@ const AdminContent = () => {
       language: editingCourse.language || "python",
       is_published: editingCourse.is_published ?? false,
       sort_order: editingCourse.sort_order ?? courses.length,
+      instructor_id: editingCourse.instructor_id || null,
     };
     if (editingCourse.id) {
       await supabase.from("courses").update(payload).eq("id", editingCourse.id);
