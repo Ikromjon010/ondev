@@ -314,6 +314,13 @@ const AdminUsers = () => {
                                 <><Shield className="w-4 h-4 mr-2" /> Admin qilish</>
                               )}
                             </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => toggleInstructor(user.user_id)}>
+                              {instructorIds.has(user.user_id) ? (
+                                <><Presentation className="w-4 h-4 mr-2" /> Ustozlikni olib tashlash</>
+                              ) : (
+                                <><Presentation className="w-4 h-4 mr-2" /> Ustoz qilish</>
+                              )}
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => toggleBlock(user)}>
                               {user.is_blocked ? (
                                 <><Unlock className="w-4 h-4 mr-2" /> Blokni olib tashlash</>
