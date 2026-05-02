@@ -248,11 +248,17 @@ const AdminUsers = () => {
                       </td>
                       <td className="p-4 text-sm text-muted-foreground font-mono">{user.phone || "—"}</td>
                       <td className="p-4">
-                        {adminIds.has(user.user_id) ? (
-                          <Badge variant="default" className="bg-primary/20 text-primary">Admin</Badge>
-                        ) : (
-                          <Badge variant="secondary">Foydalanuvchi</Badge>
-                        )}
+                        <div className="flex flex-wrap gap-1">
+                          {adminIds.has(user.user_id) && (
+                            <Badge variant="default" className="bg-primary/20 text-primary">Admin</Badge>
+                          )}
+                          {instructorIds.has(user.user_id) && (
+                            <Badge variant="default" className="bg-accent/20 text-accent">Ustoz</Badge>
+                          )}
+                          {!adminIds.has(user.user_id) && !instructorIds.has(user.user_id) && (
+                            <Badge variant="secondary">Foydalanuvchi</Badge>
+                          )}
+                        </div>
                       </td>
                       <td className="p-4">
                         <Select
