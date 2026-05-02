@@ -265,6 +265,24 @@ const AdminContent = () => {
                   <Label>Tavsif</Label>
                   <Textarea rows={3} value={editingCourse?.description || ""} onChange={(e) => setEditingCourse({ ...editingCourse, description: e.target.value })} />
                 </div>
+                <div>
+                  <Label>Ustoz (instructor)</Label>
+                  <Select
+                    value={editingCourse?.instructor_id || "none"}
+                    onValueChange={(v) => setEditingCourse({ ...editingCourse, instructor_id: v === "none" ? null : v })}
+                  >
+                    <SelectTrigger><SelectValue placeholder="Tayinlanmagan" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">— Tayinlanmagan —</SelectItem>
+                      {instructors.map((i) => (
+                        <SelectItem key={i.user_id} value={i.user_id}>{i.full_name || i.user_id.slice(0, 8)}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Faqat "Ustoz" yoki "Admin" rolidagi foydalanuvchilar ro'yxatda chiqadi.
+                  </p>
+                </div>
                 <div className="grid grid-cols-2 gap-3 items-end">
                   <div>
                     <Label>Tartib</Label>
