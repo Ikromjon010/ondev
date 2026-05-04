@@ -595,6 +595,23 @@ const Teach = () => {
                     </div>
                   </Card>
                 </TabsContent>
+
+                {/* GUIDE */}
+                <TabsContent value="guide">
+                  <Card className="glass-card p-6 max-w-3xl">
+                    <div className="flex items-center gap-2 mb-4">
+                      <FileText className="w-5 h-5 text-amber-400" />
+                      <h2 className="text-xl font-bold text-foreground">Ustozlar uchun yo'riqnoma</h2>
+                    </div>
+                    <article className="prose prose-invert prose-sm max-w-none prose-headings:text-foreground prose-headings:font-semibold prose-p:text-muted-foreground prose-li:text-muted-foreground prose-strong:text-foreground prose-code:text-amber-400 prose-code:bg-secondary/50 prose-code:px-1 prose-code:rounded prose-a:text-primary">
+                      <ReactMarkdown>{INSTRUCTOR_GUIDE_MD}</ReactMarkdown>
+                    </article>
+                    <div className="mt-6 flex items-center gap-2 p-3 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-sm text-emerald-300">
+                      <CheckCircle2 className="w-4 h-4 shrink-0" />
+                      Tayyor bo'lsangiz <button onClick={() => setActiveTab("content")} className="underline font-medium">Kontent</button> tabiga o'ting va birinchi modulingizni qo'shing.
+                    </div>
+                  </Card>
+                </TabsContent>
               </Tabs>
             )}
           </>
