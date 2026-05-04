@@ -15,7 +15,9 @@ import { toast } from "sonner";
 import {
   Plus, Edit, Trash2, ChevronDown, ChevronRight, BookOpen, Eye, EyeOff,
   Users as UsersIcon, BarChart3, GraduationCap, DollarSign, TrendingUp,
+  X, Lightbulb, FileText, CheckCircle2,
 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 interface Course {
   id: string; slug: string; title: string; description: string | null;
