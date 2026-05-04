@@ -37,6 +37,88 @@ const tierLabel: Record<string, string> = {
   basic: "Boshlang'ich", intermediate: "O'rta", advanced: "Yuqori", free: "Bepul",
 };
 
+const INSTRUCTOR_GUIDE_MD = `
+## Salom, ustoz! 👋
+
+Bu sahifa orqali siz **biriktirilgan kurs(lar)ingiz**ni to'liq boshqarasiz: modul va dars qo'shasiz, o'quvchilar progressini kuzatasiz va kurs statistikasini ko'rasiz.
+
+---
+
+## 1. Kurs strukturasi
+
+Har bir kurs quyidagi ierarxiyadan iborat:
+
+\`\`\`
+Kurs (Backend / Frontend / Mobile ...)
+  └── Modul (oy yoki bosqich)
+        └── Dars (video + nazariya + vazifa)
+\`\`\`
+
+- **Modul** — bir mavzu yoki oy birligi. **tier** maydoni dars darajasini bildiradi:
+  - \`basic\` — barcha foydalanuvchilarga bepul ochiq
+  - \`intermediate\` — "O'rta" tarifni sotib olganlar uchun
+  - \`advanced\` — "Yuqori" tarifni sotib olganlar uchun
+- **Dars** — bitta o'quv birligi: video + matn + amaliy vazifa.
+
+---
+
+## 2. Dars qo'shish
+
+Har bir darsda quyidagi maydonlar bor:
+
+- **Dars nomi** — qisqa va aniq.
+- **Davomiyligi** — \`15min\`, \`30min\` kabi.
+- **YouTube video havolasi** — \`https://youtube.com/watch?v=...\` formatida. **Maslahat:** Privacy-mode (\`youtube-nocookie.com\`) ishlatsangiz reklamasiz ochiladi.
+- **Nazariya (Markdown)** — to'liq dars matni. Vazifalarni alohida sarlavha bilan belgilang:
+
+  \`\`\`md
+  ## Nazariya
+
+  Bu yerda mavzu tushuntiriladi...
+
+  ## Vazifa 1
+
+  Foydalanuvchidan ikkita son so'rang va yig'indisini chiqaring.
+
+  ## Vazifa 2
+
+  Yana bir vazifa...
+  \`\`\`
+
+  Tizim avtomatik \`## Vazifa N\` sarlavhalarini topib, alohida tab qiladi.
+
+- **Boshlang'ich kod** — o'quvchi muharrirda ko'radigan kod (skelet).
+- **Yechim kodi** — to'g'ri yechim. AI tekshiruvchi shu bilan solishtiradi.
+- **Bepul** — agar \`true\` bo'lsa, dars hech qanday tarifni talab qilmaydi.
+
+---
+
+## 3. AI kod tekshiruvi
+
+O'quvchi vazifani topshirsa, kod **Lovable AI (Gemini)** tomonidan tekshiriladi. Tekshiruv kursning \`language\` (Python, JavaScript, Dart, ...) maydoniga qarab moslashadi. Shuning uchun:
+
+- Kursingiz uchun to'g'ri **til**ni tanlang (kursni tahrirlash oynasidan).
+- Yechim kodingiz haqiqatan ishlaydigan, sof bo'lsin — AI uni etalon sifatida ishlatadi.
+
+---
+
+## 4. O'quvchilar va statistika
+
+- **O'quvchilar** tabida — kursingizga yozilgan har bir foydalanuvchi, ularning tarifi, bajargan darslari va to'plagan ballari.
+- **Statistika** tabida — umumiy daromad (UZS), to'lovlar soni, yozilganlar va kursni o'rtacha tugatish foizi.
+
+---
+
+## 5. Bir necha foydali maslahat
+
+- 📹 Video qisqa bo'lsin (10–20 daqiqa) — o'quvchilar diqqati ushlanadi.
+- 🧪 Har bir darsda **kamida bitta vazifa** bo'lsin — amaliyotsiz dars yarim ish.
+- 🔄 Kursni \`Qoralama\` holatida tayyorlab, faqat tayyor bo'lganda \`Chop etish\`.
+- 💬 Savollaringiz bo'lsa — admin bilan bog'laning.
+
+Omad! 🚀
+`;
+
 const Teach = () => {
   const { user } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
