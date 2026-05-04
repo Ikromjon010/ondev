@@ -8,11 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { User, Phone, Shield, Trophy, Flame, BookOpen, Users } from "lucide-react";
+import { User, Phone, Shield, Trophy, Flame, BookOpen, Users, Presentation } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useInstructorCourses } from "@/hooks/useInstructorCourses";
 
 const Profile = () => {
-  const { user, profile, activeTier } = useAuth();
+  const { user, profile, activeTier, isInstructor } = useAuth();
+  const { courses: taughtCourses } = useInstructorCourses(user?.id);
   const { followersCount, followingCount } = useFollow(user?.id);
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
