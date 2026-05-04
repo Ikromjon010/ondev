@@ -55,6 +55,16 @@ const Teach = () => {
   const [students, setStudents] = useState<Array<{ user_id: string; full_name: string; tier: string; granted_at: string; completed: number; points: number }>>([]);
   const [stats, setStats] = useState({ totalRevenue: 0, paidCount: 0, totalEnrolled: 0, completionRate: 0 });
 
+  const [activeTab, setActiveTab] = useState("content");
+  const [bannerDismissed, setBannerDismissed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("teach_onboarding_dismissed") === "1";
+  });
+  const dismissBanner = () => {
+    setBannerDismissed(true);
+    localStorage.setItem("teach_onboarding_dismissed", "1");
+  };
+
   const fetchCourses = async () => {
     if (!user) return;
     const { data } = await supabase
