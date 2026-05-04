@@ -16,7 +16,9 @@ import {
   UserPlus,
   UserMinus,
   Code2,
+  Presentation,
 } from "lucide-react";
+import { useInstructorCourses } from "@/hooks/useInstructorCourses";
 
 interface ProfileData {
   user_id: string;
@@ -43,6 +45,7 @@ const PublicProfile = () => {
   const [stats, setStats] = useState({ completedLessons: 0, totalPoints: 0, currentStreak: 0 });
   const [currentLesson, setCurrentLesson] = useState<{ id: number; title: string } | null>(null);
   const [loading, setLoading] = useState(true);
+  const { courses: taughtCourses, isInstructor } = useInstructorCourses(id);
 
   useEffect(() => {
     if (!id) return;
@@ -164,10 +167,22 @@ const PublicProfile = () => {
                 {profile.full_name?.charAt(0) || "?"}
               </div>
               <div className="flex-1 min-w-0">
-                <h1 className="text-xl font-bold text-foreground truncate">
-                  {profile.full_name || "Noma'lum"}
-                </h1>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="text-xl font-bold text-foreground truncate">
+                    {profile.full_name || "Noma'lum"}
+                  </h1>
+                  {isInstructor && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                      <Presentation className="w-3 h-3" /> Ustoz
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-muted-foreground">{tierLabels[profile.active_tier]}</p>
+                {isInstructor && taughtCourses.length > 0 && (
+                  <p className="text-xs text-amber-400 mt-1">
+                    {taughtCourses.map((c) => `${c.icon} ${c.title}`).join(" · ")} ustozi
+                  </p>
+                )}
               </div>
               {user && user.id !== profile.user_id && (
                 <Button

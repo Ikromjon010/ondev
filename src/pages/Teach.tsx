@@ -15,7 +15,9 @@ import { toast } from "sonner";
 import {
   Plus, Edit, Trash2, ChevronDown, ChevronRight, BookOpen, Eye, EyeOff,
   Users as UsersIcon, BarChart3, GraduationCap, DollarSign, TrendingUp,
+  X, Lightbulb, FileText, CheckCircle2,
 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 interface Course {
   id: string; slug: string; title: string; description: string | null;
@@ -35,6 +37,88 @@ const tierLabel: Record<string, string> = {
   basic: "Boshlang'ich", intermediate: "O'rta", advanced: "Yuqori", free: "Bepul",
 };
 
+const INSTRUCTOR_GUIDE_MD = `
+## Salom, ustoz! 👋
+
+Bu sahifa orqali siz **biriktirilgan kurs(lar)ingiz**ni to'liq boshqarasiz: modul va dars qo'shasiz, o'quvchilar progressini kuzatasiz va kurs statistikasini ko'rasiz.
+
+---
+
+## 1. Kurs strukturasi
+
+Har bir kurs quyidagi ierarxiyadan iborat:
+
+\`\`\`
+Kurs (Backend / Frontend / Mobile ...)
+  └── Modul (oy yoki bosqich)
+        └── Dars (video + nazariya + vazifa)
+\`\`\`
+
+- **Modul** — bir mavzu yoki oy birligi. **tier** maydoni dars darajasini bildiradi:
+  - \`basic\` — barcha foydalanuvchilarga bepul ochiq
+  - \`intermediate\` — "O'rta" tarifni sotib olganlar uchun
+  - \`advanced\` — "Yuqori" tarifni sotib olganlar uchun
+- **Dars** — bitta o'quv birligi: video + matn + amaliy vazifa.
+
+---
+
+## 2. Dars qo'shish
+
+Har bir darsda quyidagi maydonlar bor:
+
+- **Dars nomi** — qisqa va aniq.
+- **Davomiyligi** — \`15min\`, \`30min\` kabi.
+- **YouTube video havolasi** — \`https://youtube.com/watch?v=...\` formatida. **Maslahat:** Privacy-mode (\`youtube-nocookie.com\`) ishlatsangiz reklamasiz ochiladi.
+- **Nazariya (Markdown)** — to'liq dars matni. Vazifalarni alohida sarlavha bilan belgilang:
+
+  \`\`\`md
+  ## Nazariya
+
+  Bu yerda mavzu tushuntiriladi...
+
+  ## Vazifa 1
+
+  Foydalanuvchidan ikkita son so'rang va yig'indisini chiqaring.
+
+  ## Vazifa 2
+
+  Yana bir vazifa...
+  \`\`\`
+
+  Tizim avtomatik \`## Vazifa N\` sarlavhalarini topib, alohida tab qiladi.
+
+- **Boshlang'ich kod** — o'quvchi muharrirda ko'radigan kod (skelet).
+- **Yechim kodi** — to'g'ri yechim. AI tekshiruvchi shu bilan solishtiradi.
+- **Bepul** — agar \`true\` bo'lsa, dars hech qanday tarifni talab qilmaydi.
+
+---
+
+## 3. AI kod tekshiruvi
+
+O'quvchi vazifani topshirsa, kod **Lovable AI (Gemini)** tomonidan tekshiriladi. Tekshiruv kursning \`language\` (Python, JavaScript, Dart, ...) maydoniga qarab moslashadi. Shuning uchun:
+
+- Kursingiz uchun to'g'ri **til**ni tanlang (kursni tahrirlash oynasidan).
+- Yechim kodingiz haqiqatan ishlaydigan, sof bo'lsin — AI uni etalon sifatida ishlatadi.
+
+---
+
+## 4. O'quvchilar va statistika
+
+- **O'quvchilar** tabida — kursingizga yozilgan har bir foydalanuvchi, ularning tarifi, bajargan darslari va to'plagan ballari.
+- **Statistika** tabida — umumiy daromad (UZS), to'lovlar soni, yozilganlar va kursni o'rtacha tugatish foizi.
+
+---
+
+## 5. Bir necha foydali maslahat
+
+- 📹 Video qisqa bo'lsin (10–20 daqiqa) — o'quvchilar diqqati ushlanadi.
+- 🧪 Har bir darsda **kamida bitta vazifa** bo'lsin — amaliyotsiz dars yarim ish.
+- 🔄 Kursni \`Qoralama\` holatida tayyorlab, faqat tayyor bo'lganda \`Chop etish\`.
+- 💬 Savollaringiz bo'lsa — admin bilan bog'laning.
+
+Omad! 🚀
+`;
+
 const Teach = () => {
   const { user } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
@@ -52,6 +136,16 @@ const Teach = () => {
 
   const [students, setStudents] = useState<Array<{ user_id: string; full_name: string; tier: string; granted_at: string; completed: number; points: number }>>([]);
   const [stats, setStats] = useState({ totalRevenue: 0, paidCount: 0, totalEnrolled: 0, completionRate: 0 });
+
+  const [activeTab, setActiveTab] = useState("content");
+  const [bannerDismissed, setBannerDismissed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("teach_onboarding_dismissed") === "1";
+  });
+  const dismissBanner = () => {
+    setBannerDismissed(true);
+    localStorage.setItem("teach_onboarding_dismissed", "1");
+  };
 
   const fetchCourses = async () => {
     if (!user) return;
@@ -327,12 +421,43 @@ const Teach = () => {
               ))}
             </div>
 
+            {selectedCourse && !bannerDismissed && (
+              <Card className="glass-card p-5 mb-4 border-amber-500/30 bg-amber-500/5">
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-amber-500/15 flex items-center justify-center shrink-0">
+                    <Lightbulb className="w-5 h-5 text-amber-400" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="font-semibold text-foreground">Ustoz panelidagi 3 oddiy qadam</h3>
+                      <button onClick={dismissBanner} className="text-muted-foreground hover:text-foreground" aria-label="Yopish">
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <ol className="mt-2 space-y-1.5 text-sm text-muted-foreground">
+                      <li><span className="text-amber-400 font-bold">1.</span> <button onClick={() => setActiveTab("content")} className="hover:text-foreground underline-offset-2 hover:underline">Modul qo'shing</button> — kursni oylar / bosqichlarga bo'ling.</li>
+                      <li><span className="text-amber-400 font-bold">2.</span> <button onClick={() => setActiveTab("content")} className="hover:text-foreground underline-offset-2 hover:underline">Darslar yarating</button> — YouTube video, markdown nazariya va vazifalar qo'shing.</li>
+                      <li><span className="text-amber-400 font-bold">3.</span> <button onClick={() => setActiveTab("students")} className="hover:text-foreground underline-offset-2 hover:underline">O'quvchilar progressini kuzating</button> va statistikani tahlil qiling.</li>
+                    </ol>
+                    <p className="text-xs text-muted-foreground mt-3">
+                      To'liq qo'llanma uchun{" "}
+                      <button onClick={() => setActiveTab("guide")} className="text-amber-400 hover:underline font-medium">
+                        Yo'riqnoma
+                      </button>{" "}
+                      tabini oching.
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            )}
+
             {selectedCourse && (
-              <Tabs defaultValue="content" className="space-y-4">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
                 <TabsList className="bg-card border border-border">
                   <TabsTrigger value="content" className="gap-1"><BookOpen className="w-4 h-4" /> Kontent</TabsTrigger>
                   <TabsTrigger value="students" className="gap-1"><UsersIcon className="w-4 h-4" /> O'quvchilar</TabsTrigger>
                   <TabsTrigger value="stats" className="gap-1"><BarChart3 className="w-4 h-4" /> Statistika</TabsTrigger>
+                  <TabsTrigger value="guide" className="gap-1"><FileText className="w-4 h-4" /> Yo'riqnoma</TabsTrigger>
                 </TabsList>
 
                 {/* CONTENT */}
@@ -549,6 +674,23 @@ const Teach = () => {
                         </div>
                       ))}
                       {students.length === 0 && <p className="text-sm text-muted-foreground">Ma'lumot yo'q</p>}
+                    </div>
+                  </Card>
+                </TabsContent>
+
+                {/* GUIDE */}
+                <TabsContent value="guide">
+                  <Card className="glass-card p-6 max-w-3xl">
+                    <div className="flex items-center gap-2 mb-4">
+                      <FileText className="w-5 h-5 text-amber-400" />
+                      <h2 className="text-xl font-bold text-foreground">Ustozlar uchun yo'riqnoma</h2>
+                    </div>
+                    <article className="prose prose-invert prose-sm max-w-none prose-headings:text-foreground prose-headings:font-semibold prose-p:text-muted-foreground prose-li:text-muted-foreground prose-strong:text-foreground prose-code:text-amber-400 prose-code:bg-secondary/50 prose-code:px-1 prose-code:rounded prose-a:text-primary">
+                      <ReactMarkdown>{INSTRUCTOR_GUIDE_MD}</ReactMarkdown>
+                    </article>
+                    <div className="mt-6 flex items-center gap-2 p-3 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-sm text-emerald-300">
+                      <CheckCircle2 className="w-4 h-4 shrink-0" />
+                      Tayyor bo'lsangiz <button onClick={() => setActiveTab("content")} className="underline font-medium">Kontent</button> tabiga o'ting va birinchi modulingizni qo'shing.
                     </div>
                   </Card>
                 </TabsContent>

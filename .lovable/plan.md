@@ -1,65 +1,52 @@
 ## Maqsad
 
-Hozir platforma faqat bitta yo'nalishga (Python/Django backend) qurilgan — `modules` jadvalida `tier` (basic/intermediate/advanced) bor, lekin **kurs yo'nalishi** tushunchasi yo'q. Buni o'zgartirib, foydalanuvchi bir nechta yo'nalishlardan birini (Backend, Frontend, Mobile va h.k.) tanlab o'qiy oladigan qilamiz.
+Adminga ustozlarni qulay taklif qilish, ustozga aniq onboarding (qo'llanma) va platformada ko'rinish (badge) berish.
 
-## Yangi struktura
+## Tafsilot
 
-```text
-Course (yo'nalish)         -> "Python Backend", "Frontend", "Mobile (Flutter)" ...
-  └── Module (oy/bosqich)  -> tier (basic/intermediate/advanced) shu yerda
-        └── Lesson         -> video, kontent, kod, task
-```
+### 1. Admin: Ustoz taklif qilish oqimi (`AdminUsers.tsx`)
+- Hozir bor: foydalanuvchiga "Instructor" rolini bermoq/olmoq (dropdown).
+- Qo'shamiz:
+  - **"Ustoz taklif qilish"** tugmasi sahifa tepasida → modal:
+    - Telefon (yoki email) kiritiladi.
+    - Agar foydalanuvchi `profiles`'da topilsa — darhol `instructor` roli beriladi va kursga biriktirish dropdown'i ko'rsatiladi (kurslar ro'yxati `courses`'dan).
+    - Agar topilmasa — "Avval ro'yxatdan o'tsin, keyin qaytib bog'laysiz" deb sodda xabar (yangi user yaratmaymiz, xavfsizlik uchun).
+  - Foydalanuvchilar jadvalida **"Ustoz"** ustuni: o'sha ustoz biriktirilgan kurs(lar) nomini chiqaradi.
+  - Tezkor amal: foydalanuvchini ochib, **"Kursga biriktirish"** dropdown — `courses.instructor_id` ni o'rnatadi.
 
-Har bir kursning o'z modullari, darslari, narxi (tier'lari) va sertifikati bo'ladi. Foydalanuvchi bir nechta kursga obuna bo'lishi mumkin.
+### 2. `/teach` ustoz onboarding sahifasi (`Teach.tsx`)
+Birinchi marta kirgan ustoz uchun:
+- Kursi yo'q bo'lsa: "Sizga hali kurs biriktirilmagan. Admin bilan bog'laning." — bo'sh holat.
+- Kursi bor bo'lsa, sahifa tepasida **qisqa onboarding banner** (yopiladigan, `localStorage`'da yopilganini saqlash):
+  - 3 qadam: **Modul qo'shing → Darslar yarating (video + markdown + task) → O'quvchilar progressini kuzating**.
+  - Har birida CTA tugma (tegishli tabga olib boradi).
+- Yangi **"Yo'riqnoma"** tab qo'shamiz — to'liq Markdown qo'llanma:
+  - Dars qanday tuzilishi (YouTube link formati, markdown'da `## Vazifa N` sarlavhalari, starter/solution code).
+  - AI kod tekshiruvi qanday ishlashi (`language` maydoni muhim).
+  - Tier (basic/intermediate/advanced) ma'nosi.
 
-## Bosqichlar
+### 3. Ustoz profilida belgi
+- `Profile.tsx` va `PublicProfile.tsx`'da: agar foydalanuvchi `instructor` rolida va biror kursning `instructor_id`'si bo'lsa — ism yonida **"Ustoz"** badge (oltin/amber rangda) + "X kursi ustozi" matni va o'sha kursga link.
+- `AppHeader`'dagi avatar dropdown'iga ham kichik "Ustoz" indikatori (agar instructor bo'lsa).
 
-### 1-bosqich: Ma'lumotlar bazasi (migration)
-- Yangi `courses` jadvali: `id`, `slug` (`python-backend`, `frontend`, `mobile`), `title`, `description`, `icon`, `color`, `language` (Python/JS/Dart), `is_published`, `sort_order`.
-- `modules` jadvaliga `course_id` ustuni qo'shish (default = mavjud Python kursining id'si, NOT NULL).
-- `profiles.active_tier` o'rniga yangi `user_course_access` jadvali: `user_id`, `course_id`, `tier` (free/intermediate/advanced), `granted_at`. Bir foydalanuvchi har bir kurs uchun alohida tier'ga ega bo'ladi.
-- `payments` jadvaliga `course_id` ustuni qo'shish.
-- `certificates` jadvaliga `course_id` ustuni qo'shish.
-- `user_progress`'ga tegmaymiz (`lesson_id` orqali kursga ulanadi).
-- Hamma yangi jadvallarga RLS: hamma o'qiy oladi (kurslar katalogi ochiq), faqat admin o'zgartiradi; `user_course_access`'ni faqat admin yoza oladi (to'lov tasdiqlangach), foydalanuvchi o'zinikini ko'radi.
-- Migratsiya barcha mavjud modullarni avtomatik "Python Backend" kursiga bog'laydi (data backfill).
-
-### 2-bosqich: Frontend — kurslarni tanlash
-- **Yangi sahifa `/courses`**: barcha mavjud kurslar katalogi (kartalar bilan), har birida til/ikon/qisqa tavsif, narx (yoki "Tez orada"), "Boshlash" tugmasi.
-- **Dashboard (`/dashboard`)** qayta ishlanadi: foydalanuvchi obuna bo'lgan kurslar ro'yxati ko'rsatiladi; agar hech qaysisiga obuna bo'lmagan bo'lsa — "Kurs tanlang" CTA `/courses`'ga olib boradi.
-- **Syllabus (`/syllabus/:courseSlug`)** — URL'ga kurs slug qo'shamiz, faqat shu kurs modullari ko'rsatiladi.
-- **LessonView** — dars qaysi kursga tegishli ekanini chiqaradi (breadcrumb), tier tekshiruvi `user_course_access`'dan o'qiladi.
-- **AppHeader** — "Joriy dars" tugmasi joriy faol kursga bog'lanadi; agar bir nechta kursi bo'lsa — kurs tanlash dropdown.
-- **Checkout (`/checkout/:courseSlug/:tier`)** — kurs slug bo'yicha to'lovga yo'naltiradi, muvaffaqiyatli to'lovdan keyin `user_course_access`'ga yozadi.
-- **Sertifikat** — kurs nomi sertifikatga chiqadi.
-
-### 3-bosqich: Admin panel
-- **AdminContent** ikki bosqichli bo'ladi: avval kurs tanlanadi (yoki yangi kurs yaratiladi), so'ng o'sha kursning modullari/darslari ko'rsatiladi.
-- **Yangi `AdminCourses` (yoki AdminContent ichida tab)**: kurs CRUD — qo'shish, tahrirlash, yashirish/chiqarish, ikon va rang tanlash.
-- **AdminUsers**: "Joriy dars" ustuniga qaysi kurs ekani ham qo'shiladi; foydalanuvchiga qo'lda kurs tier bera olish.
-- **AdminPayments**: to'lovda kurs ko'rsatiladi.
-- **AdminDashboard**: statistika kurslar bo'yicha bo'linadi.
-
-### 4-bosqich: Boshlang'ich kurslar (data)
-- "Python Backend" — mavjud kontent (avtomatik).
-- "Frontend (React)" — bo'sh skeleton (admin keyin to'ldiradi), `is_published = false`.
-- "Mobile (Flutter)" — bo'sh skeleton, `is_published = false`.
-Foydalanuvchilar `is_published = true` bo'lganlarini ko'radi.
+### 4. Ustoz biriktirilganda email xabarnoma (ixtiyoriy — keyinroq qilamiz)
+Hozir email infratuzilmasi yo'q. Buni alohida bosqichda qo'shamiz: admin taklif tugmasini bosganda ustozga "Tabriklaymiz, siz X kursiga ustoz qilib tayinlandingiz" emaili. Bu Lovable Cloud'ning email tizimini (domen + setup) talab qiladi — **bu rejaga kiritmaymiz**, tasdiqlasangiz keyingi qadamda alohida qilamiz.
 
 ## Texnik tafsilotlar
 
-- Backend AI tekshiruvchisi (`check-code` edge function) hozir Python uchun. Yangi kurslarda boshqa tillar bo'lgani uchun darsga `language` (yoki kursdan meros) qo'shiladi va system prompt'i shu tilga moslashadi (Python o'qituvchisi → JS/Dart o'qituvchisi).
-- Monaco Editor til rejimi `lesson.language` yoki `course.language` orqali dinamik o'rnatiladi.
-- `useCurrentLesson` hook'i kurs slug'ini parametr sifatida qabul qiladi.
-- `AuthContext.activeTier` o'rniga `useCourseAccess(courseSlug)` hook'i — kursga xos tier qaytaradi.
-- TypeScript turlari `src/integrations/supabase/types.ts` migratsiyadan keyin avtomatik yangilanadi.
-- Eski `/syllabus` URL'i `/syllabus/python-backend`'ga redirect qilinadi (orqaga moslik).
+- **DB o'zgarishi shart emas.** Hammasi mavjud jadvallar bilan ishlaydi (`courses.instructor_id`, `user_roles`, `profiles`).
+- **Yangi hook**: `useInstructorCourses(userId)` — berilgan foydalanuvchi ustoz bo'lgan kurslarni qaytaradi (Profile va AdminUsers'da ishlatamiz).
+- **AdminUsers** — invite modal `Dialog` orqali; telefon `profiles.phone` bo'yicha qidiriladi (avval normalizatsiya: faqat raqamlar).
+- **Teach onboarding banner** — `useState` + `localStorage` (`teach_onboarding_dismissed`).
+- **Yo'riqnoma tab** — statik Markdown content, `react-markdown` orqali render qilamiz (allaqachon `LessonView`'da ishlatilgan).
+- **Badge ranglari** — `bg-amber-500/15 text-amber-400 border-amber-500/30` (mavjud dizayn tizimiga mos).
 
-## Nima o'zgarmaydi
-- Auth, follow, leaderboard, gamification, badge tizimi shundayligicha qoladi (ular kursdan mustaqil).
-- Mavjud Python darslari va foydalanuvchilar progressi yo'qolmaydi (migratsiya backfill qiladi).
+## O'zgaradigan/yaratiladigan fayllar
+- `src/pages/admin/AdminUsers.tsx` — taklif modal + ustoz ustuni.
+- `src/pages/Teach.tsx` — onboarding banner + Yo'riqnoma tab + bo'sh holat.
+- `src/pages/Profile.tsx` — ustoz badge.
+- `src/pages/PublicProfile.tsx` — ustoz badge + "X kursi ustozi" link.
+- `src/hooks/useInstructorCourses.ts` — yangi hook.
+- (Optional) `src/components/AppHeader.tsx` — dropdown'da kichik belgi.
 
-## Yetkazib berish tartibi
-1-bosqich va 4-bosqich (DB + skeleton kurslar) → 2-bosqich (kurs tanlash UI) → 3-bosqich (admin) → AI tekshiruvchini ko'p tilga moslashtirish.
-
-Tasdiqlasangiz, ishni ushbu tartibda boshlayman.
+Tasdiqlasangiz, shu tartibda bajarib boshlayman.

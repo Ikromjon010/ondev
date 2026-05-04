@@ -8,11 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { User, Phone, Shield, Trophy, Flame, BookOpen, Users } from "lucide-react";
+import { User, Phone, Shield, Trophy, Flame, BookOpen, Users, Presentation } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useInstructorCourses } from "@/hooks/useInstructorCourses";
 
 const Profile = () => {
-  const { user, profile, activeTier } = useAuth();
+  const { user, profile, activeTier, isInstructor } = useAuth();
+  const { courses: taughtCourses } = useInstructorCourses(user?.id);
   const { followersCount, followingCount } = useFollow(user?.id);
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -80,7 +82,35 @@ const Profile = () => {
     <div className="min-h-screen bg-background">
       <AppHeader />
       <main className="container px-4 py-8 max-w-2xl">
-        <h1 className="text-2xl font-bold text-foreground mb-6">Mening profilim</h1>
+        <div className="flex items-center gap-3 mb-6 flex-wrap">
+          <h1 className="text-2xl font-bold text-foreground">Mening profilim</h1>
+          {isInstructor && (
+            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30">
+              <Presentation className="w-3.5 h-3.5" /> Ustoz
+            </span>
+          )}
+        </div>
+
+        {isInstructor && taughtCourses.length > 0 && (
+          <Card className="glass-card mb-4 border-amber-500/30">
+            <CardContent className="pt-4 pb-4">
+              <p className="text-xs uppercase tracking-wide text-amber-400 font-semibold mb-2">
+                {taughtCourses.length === 1 ? "Sizning kursingiz" : `Sizning ${taughtCourses.length} ta kursingiz`}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {taughtCourses.map((c) => (
+                  <Link
+                    key={c.id}
+                    to="/teach"
+                    className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-md bg-secondary/50 hover:bg-secondary text-foreground transition-colors"
+                  >
+                    <span>{c.icon}</span> {c.title}
+                  </Link>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3 mb-4">
