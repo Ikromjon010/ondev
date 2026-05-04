@@ -339,12 +339,43 @@ const Teach = () => {
               ))}
             </div>
 
+            {selectedCourse && !bannerDismissed && (
+              <Card className="glass-card p-5 mb-4 border-amber-500/30 bg-amber-500/5">
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-amber-500/15 flex items-center justify-center shrink-0">
+                    <Lightbulb className="w-5 h-5 text-amber-400" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="font-semibold text-foreground">Ustoz panelidagi 3 oddiy qadam</h3>
+                      <button onClick={dismissBanner} className="text-muted-foreground hover:text-foreground" aria-label="Yopish">
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <ol className="mt-2 space-y-1.5 text-sm text-muted-foreground">
+                      <li><span className="text-amber-400 font-bold">1.</span> <button onClick={() => setActiveTab("content")} className="hover:text-foreground underline-offset-2 hover:underline">Modul qo'shing</button> — kursni oylar / bosqichlarga bo'ling.</li>
+                      <li><span className="text-amber-400 font-bold">2.</span> <button onClick={() => setActiveTab("content")} className="hover:text-foreground underline-offset-2 hover:underline">Darslar yarating</button> — YouTube video, markdown nazariya va vazifalar qo'shing.</li>
+                      <li><span className="text-amber-400 font-bold">3.</span> <button onClick={() => setActiveTab("students")} className="hover:text-foreground underline-offset-2 hover:underline">O'quvchilar progressini kuzating</button> va statistikani tahlil qiling.</li>
+                    </ol>
+                    <p className="text-xs text-muted-foreground mt-3">
+                      To'liq qo'llanma uchun{" "}
+                      <button onClick={() => setActiveTab("guide")} className="text-amber-400 hover:underline font-medium">
+                        Yo'riqnoma
+                      </button>{" "}
+                      tabini oching.
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            )}
+
             {selectedCourse && (
-              <Tabs defaultValue="content" className="space-y-4">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
                 <TabsList className="bg-card border border-border">
                   <TabsTrigger value="content" className="gap-1"><BookOpen className="w-4 h-4" /> Kontent</TabsTrigger>
                   <TabsTrigger value="students" className="gap-1"><UsersIcon className="w-4 h-4" /> O'quvchilar</TabsTrigger>
                   <TabsTrigger value="stats" className="gap-1"><BarChart3 className="w-4 h-4" /> Statistika</TabsTrigger>
+                  <TabsTrigger value="guide" className="gap-1"><FileText className="w-4 h-4" /> Yo'riqnoma</TabsTrigger>
                 </TabsList>
 
                 {/* CONTENT */}
