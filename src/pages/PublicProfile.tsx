@@ -16,7 +16,9 @@ import {
   UserPlus,
   UserMinus,
   Code2,
+  Presentation,
 } from "lucide-react";
+import { useInstructorCourses } from "@/hooks/useInstructorCourses";
 
 interface ProfileData {
   user_id: string;
