@@ -45,6 +45,7 @@ const PublicProfile = () => {
   const [stats, setStats] = useState({ completedLessons: 0, totalPoints: 0, currentStreak: 0 });
   const [currentLesson, setCurrentLesson] = useState<{ id: number; title: string } | null>(null);
   const [loading, setLoading] = useState(true);
+  const { courses: taughtCourses, isInstructor } = useInstructorCourses(id);
 
   useEffect(() => {
     if (!id) return;
