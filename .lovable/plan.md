@@ -1,52 +1,134 @@
 ## Maqsad
 
-Adminga ustozlarni qulay taklif qilish, ustozga aniq onboarding (qo'llanma) va platformada ko'rinish (badge) berish.
+1. **Landing pageni** to'liq, ishonarli marketing sahifasiga aylantirish (hozir bor bo'lim hero+kurslar+features+pricing — qisqa).
+2. **Sertifikat tizimini** mock'dan real ma'lumotlarga o'tkazish: haqiqiy QR, verifikatsiya sahifasi, PDF yuklash, avtomatik berilish.
 
-## Tafsilot
+---
 
-### 1. Admin: Ustoz taklif qilish oqimi (`AdminUsers.tsx`)
-- Hozir bor: foydalanuvchiga "Instructor" rolini bermoq/olmoq (dropdown).
-- Qo'shamiz:
-  - **"Ustoz taklif qilish"** tugmasi sahifa tepasida → modal:
-    - Telefon (yoki email) kiritiladi.
-    - Agar foydalanuvchi `profiles`'da topilsa — darhol `instructor` roli beriladi va kursga biriktirish dropdown'i ko'rsatiladi (kurslar ro'yxati `courses`'dan).
-    - Agar topilmasa — "Avval ro'yxatdan o'tsin, keyin qaytib bog'laysiz" deb sodda xabar (yangi user yaratmaymiz, xavfsizlik uchun).
-  - Foydalanuvchilar jadvalida **"Ustoz"** ustuni: o'sha ustoz biriktirilgan kurs(lar) nomini chiqaradi.
-  - Tezkor amal: foydalanuvchini ochib, **"Kursga biriktirish"** dropdown — `courses.instructor_id` ni o'rnatadi.
+## 1-qism: Landing pageni to'ldirish (`src/pages/Index.tsx`)
 
-### 2. `/teach` ustoz onboarding sahifasi (`Teach.tsx`)
-Birinchi marta kirgan ustoz uchun:
-- Kursi yo'q bo'lsa: "Sizga hali kurs biriktirilmagan. Admin bilan bog'laning." — bo'sh holat.
-- Kursi bor bo'lsa, sahifa tepasida **qisqa onboarding banner** (yopiladigan, `localStorage`'da yopilganini saqlash):
-  - 3 qadam: **Modul qo'shing → Darslar yarating (video + markdown + task) → O'quvchilar progressini kuzating**.
-  - Har birida CTA tugma (tegishli tabga olib boradi).
-- Yangi **"Yo'riqnoma"** tab qo'shamiz — to'liq Markdown qo'llanma:
-  - Dars qanday tuzilishi (YouTube link formati, markdown'da `## Vazifa N` sarlavhalari, starter/solution code).
-  - AI kod tekshiruvi qanday ishlashi (`language` maydoni muhim).
-  - Tier (basic/intermediate/advanced) ma'nosi.
+Mavjud bo'limlar saqlanadi, qo'shamiz:
 
-### 3. Ustoz profilida belgi
-- `Profile.tsx` va `PublicProfile.tsx`'da: agar foydalanuvchi `instructor` rolida va biror kursning `instructor_id`'si bo'lsa — ism yonida **"Ustoz"** badge (oltin/amber rangda) + "X kursi ustozi" matni va o'sha kursga link.
-- `AppHeader`'dagi avatar dropdown'iga ham kichik "Ustoz" indikatori (agar instructor bo'lsa).
+### a) Hero ostiga **statistika polosasi**
+- "500+ o'quvchi", "108 dars", "9 oylik dastur", "4.8★ reyting" — `glass-card` chiziqli blok.
+- Raqamlar hozircha statik (yoki `profiles`/`lessons` count'idan olamiz — oson SQL).
 
-### 4. Ustoz biriktirilganda email xabarnoma (ixtiyoriy — keyinroq qilamiz)
-Hozir email infratuzilmasi yo'q. Buni alohida bosqichda qo'shamiz: admin taklif tugmasini bosganda ustozga "Tabriklaymiz, siz X kursiga ustoz qilib tayinlandingiz" emaili. Bu Lovable Cloud'ning email tizimini (domen + setup) talab qiladi — **bu rejaga kiritmaymiz**, tasdiqlasangiz keyingi qadamda alohida qilamiz.
+### b) **"Qanday ishlaydi"** bo'limi (yangi)
+4 qadam vizual:
+1. Ro'yxatdan o'ting (telefon orqali)
+2. Qisqa video tomosha qiling
+3. Brauzerda kod yozing — AI tekshiradi
+4. Ball, sertifikat va reyting
+
+Har birida ikon (`UserPlus`, `PlayCircle`, `Code2`, `Award`) + qisqa matn.
+
+### c) **Kod muharriri preview** (yangi)
+Statik mock IDE oynasi: chap tomonda Python kodi (syntax highlighted div), o'ngda "✓ Test passed" output. Marketing "show, don't tell" effekti.
+
+### d) **Yutuqlar/o'quvchi sharhlari** (yangi)
+3 ta sharh kartasi (statik, hozircha tipik o'quvchi nomlaridan): "Ondev orqali birinchi backend ishimni topdim" tipidagi.
+
+### e) **FAQ** akkordeon (yangi)
+6-8 ta savol: "Qancha vaqt ketadi?", "Oldindan tajriba kerakmi?", "Sertifikat tan olinadimi?", "To'lov qanday?", "Qaytarish bormi?", "Qaysi tilda?".
+`@/components/ui/accordion` ishlatamiz.
+
+### f) **Final CTA banner**
+"Bugun bepul boshlang" katta call-to-action — gradient fon, ikkita tugma.
+
+### g) **Footer'ni kengaytirish**
+Bog'lanish (Telegram link, email), siyosat/shartlar (placeholder), bo'limlar.
+
+---
+
+## 2-qism: Sertifikat tizimini tugatish
+
+### Asosiy kamchiliklar hozir
+- `Certificate.tsx` — barcha ma'lumot **hardcoded** ("Sardor Rakhimov", "ONDEV-2026-SR7X9K"). DB'dagi `certificates` jadvali ishlatilmaydi.
+- QR kod — chiroyli rasm, lekin haqiqiy emas.
+- Verifikatsiya sahifasi yo'q (QR'ni skanerlasa hech narsa ochilmaydi).
+- Sertifikat **avtomatik berilmaydi** (kursni tugatganda).
+- PDF "yuklab olish" — `window.print()` (brauzer print dialog), to'g'ri PDF emas.
+
+### Bajariladigan ishlar
+
+#### a) Route va ma'lumot oqimi
+- `/certificate` — joriy foydalanuvchining sertifikatlari ro'yxati (kurs bo'yicha kartalar). Agar bitta bo'lsa to'g'ridan-to'g'ri ko'rsatamiz.
+- `/certificate/:credentialId` — **ommaviy** verifikatsiya sahifasi (login talab qilmaydi, `certificates` jadvalida `Public can view` policy bor).
+  - Agar topilsa: "✓ Tasdiqlangan sertifikat" + sertifikat ko'rinishi.
+  - Agar topilmasa: "Sertifikat topilmadi".
+
+#### b) Sertifikat komponentini ajratish
+- Yangi `src/components/CertificateCard.tsx` — qayta ishlatiladigan, `studentName`, `courseTitle`, `date`, `credentialId` props oladi.
+- `Certificate.tsx` va verifikatsiya sahifasi shu komponentni ishlatadi.
+
+#### c) Real QR kod
+- `qrcode.react` paketini qo'shamiz (`bun add qrcode.react`).
+- QR mazmuni: `https://ondev.uz/certificate/{credentialId}`.
+
+#### d) Avtomatik sertifikat berilishi
+- Yangi hook/util: `useIssueCertificateOnComplete(courseId)` — `Syllabus`/`LessonView`'da ishlatiladi.
+- Logika: foydalanuvchi kurs ichidagi **barcha darslarni** tugatganida (`user_progress.completed = true` for all `lessons` in course's modules), `certificates` jadvaliga `INSERT` qilinadi:
+  - `credential_id`: `ONDEV-{YEAR}-{6 ta random alfanumeric}` (client-side generatsiya, RLS `auth.uid() = user_id` bilan insert qilamiz).
+  - `student_name`: `profiles.full_name`'dan.
+- **DB siyosati**: `certificates` hozir faqat **admin manage** uchun INSERT qila oladi. **Migration kerak** — yangi RLS policy:
+  ```
+  CREATE POLICY "Users can issue own certificate"
+  ON certificates FOR INSERT TO authenticated
+  WITH CHECK (auth.uid() = user_id);
+  ```
+- Dublikatlarning oldini olish uchun unique index: `UNIQUE(user_id, course_id)`.
+
+#### e) PDF yuklash (real)
+- `html2canvas` + `jspdf` (yengil, allaqachon ekosistemada keng ishlatiladi). `bun add html2canvas jspdf`.
+- "PDF yuklab olish" tugmasi — `CertificateCard` ref'ini canvas'ga, keyin A4 landscape PDF.
+- `window.print()` zaxira sifatida qoldiramiz (alohida "Chop etish" tugmasi).
+
+#### f) Dashboard'da sertifikatlar belgisi
+- Agar foydalanuvchining `certificates` yozuvi bo'lsa, `Dashboard.tsx`'da "Sizning sertifikatlaringiz" mini-bo'lim yoki `AppHeader` profilida belgi.
+
+---
 
 ## Texnik tafsilotlar
 
-- **DB o'zgarishi shart emas.** Hammasi mavjud jadvallar bilan ishlaydi (`courses.instructor_id`, `user_roles`, `profiles`).
-- **Yangi hook**: `useInstructorCourses(userId)` — berilgan foydalanuvchi ustoz bo'lgan kurslarni qaytaradi (Profile va AdminUsers'da ishlatamiz).
-- **AdminUsers** — invite modal `Dialog` orqali; telefon `profiles.phone` bo'yicha qidiriladi (avval normalizatsiya: faqat raqamlar).
-- **Teach onboarding banner** — `useState` + `localStorage` (`teach_onboarding_dismissed`).
-- **Yo'riqnoma tab** — statik Markdown content, `react-markdown` orqali render qilamiz (allaqachon `LessonView`'da ishlatilgan).
-- **Badge ranglari** — `bg-amber-500/15 text-amber-400 border-amber-500/30` (mavjud dizayn tizimiga mos).
+### Yangi/o'zgaradigan fayllar
+- `src/pages/Index.tsx` — yangi bo'limlar (Stats, HowItWorks, IDEPreview, Testimonials, FAQ, FinalCTA).
+- `src/pages/Certificate.tsx` — DB'dan o'qish, ro'yxat ko'rinishi.
+- `src/pages/CertificateVerify.tsx` — yangi ommaviy sahifa.
+- `src/components/CertificateCard.tsx` — yangi komponent (QR + dizayn).
+- `src/hooks/useIssueCertificate.ts` — yangi hook (avtomatik berish logikasi).
+- `src/App.tsx` — yangi route `/certificate/:credentialId`.
+- `src/pages/LessonView.tsx` (yoki `Syllabus.tsx`) — kurs tugaganini aniqlash va sertifikat berishni triggerlash.
 
-## O'zgaradigan/yaratiladigan fayllar
-- `src/pages/admin/AdminUsers.tsx` — taklif modal + ustoz ustuni.
-- `src/pages/Teach.tsx` — onboarding banner + Yo'riqnoma tab + bo'sh holat.
-- `src/pages/Profile.tsx` — ustoz badge.
-- `src/pages/PublicProfile.tsx` — ustoz badge + "X kursi ustozi" link.
-- `src/hooks/useInstructorCourses.ts` — yangi hook.
-- (Optional) `src/components/AppHeader.tsx` — dropdown'da kichik belgi.
+### DB migration
+```sql
+-- 1. INSERT policy for users
+CREATE POLICY "Users can issue own certificate"
+ON public.certificates FOR INSERT TO authenticated
+WITH CHECK (auth.uid() = user_id);
 
-Tasdiqlasangiz, shu tartibda bajarib boshlayman.
+-- 2. Prevent duplicates (one cert per user/course)
+CREATE UNIQUE INDEX certificates_user_course_unique
+ON public.certificates(user_id, course_id);
+```
+
+### Yangi paketlar
+- `qrcode.react` — QR generatsiya
+- `html2canvas` + `jspdf` — PDF eksport
+
+### Ishlatilmaydi
+- Email yuborish (sertifikat berilganda) — keyingi bosqichga, email infratuzilmasi sozlanmagan.
+- Real raqamli imzo (cryptographic) — keyingi bosqichga.
+
+---
+
+## Tartib
+
+1. Landing'ni yangilash (1-qism, hammasi bir faylda).
+2. DB migration — `certificates` policy + unique index.
+3. `CertificateCard` komponenti + `qrcode.react` o'rnatish.
+4. `Certificate.tsx` — DB'dan o'qish, ro'yxat.
+5. `CertificateVerify.tsx` + route.
+6. Avtomatik berish hook'i + `LessonView`'ga integratsiya.
+7. PDF eksport (`html2canvas` + `jspdf`).
+
+Tasdiqlasangiz, shu tartibda bajaraman.
