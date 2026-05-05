@@ -13,6 +13,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Checkout from "./pages/Checkout";
 import Certificate from "./pages/Certificate";
+import CertificateVerify from "./pages/CertificateVerify";
 import Profile from "./pages/Profile";
 import Users from "./pages/Users";
 import PublicProfile from "./pages/PublicProfile";
@@ -44,6 +45,7 @@ const App = () => (
             <Route path="/register" element={<Register />} />
             <Route path="/checkout/:tier" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
             <Route path="/certificate" element={<ProtectedRoute><Certificate /></ProtectedRoute>} />
+            <Route path="/certificate/:credentialId" element={<CertificateVerify />} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
             <Route path="/users/:id" element={<ProtectedRoute><PublicProfile /></ProtectedRoute>} />
