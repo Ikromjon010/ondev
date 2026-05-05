@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { awardPoints } from "@/hooks/useGamification";
 import CelebrationOverlay from "@/components/CelebrationOverlay";
 import PracticeTasks from "@/components/PracticeTasks";
+import { useIssueCertificateOnComplete } from "@/hooks/useIssueCertificate";
 
 const LessonView = () => {
   const { user, isAdmin } = useAuth();
@@ -32,6 +33,8 @@ const LessonView = () => {
   } | null>(null);
   const [totalLessons, setTotalLessons] = useState(108);
   const [loading, setLoading] = useState(true);
+  const [courseId, setCourseId] = useState<string | null>(null);
+  useIssueCertificateOnComplete(submittedFlag(courseId));
 
   const [output, setOutput] = useState("");
   const [submitted, setSubmitted] = useState(false);
