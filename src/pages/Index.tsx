@@ -146,10 +146,10 @@ const Index = () => {
               Birinchi oy — bepul
             </span>
             <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-6">
-              Kod yozib{" "}
-              <span className="text-primary">o'rganasiz</span>,
+              OnDev —{" "}
+              <span className="text-primary">Chegarasiz</span>
               <br className="hidden md:block" />
-              eslab qolmaysiz
+              bilim oling
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
               Har bir dars — qisqa video, vazifa va brauzerdagi kod muharriri.
