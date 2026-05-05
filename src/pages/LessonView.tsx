@@ -34,7 +34,7 @@ const LessonView = () => {
   const [totalLessons, setTotalLessons] = useState(108);
   const [loading, setLoading] = useState(true);
   const [courseId, setCourseId] = useState<string | null>(null);
-  useIssueCertificateOnComplete(submittedFlag(courseId));
+  useIssueCertificateOnComplete(courseId);
 
   const [output, setOutput] = useState("");
   const [submitted, setSubmitted] = useState(false);
