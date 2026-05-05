@@ -1,19 +1,83 @@
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { GraduationCap, Download, Linkedin, ArrowLeft } from "lucide-react";
+import { GraduationCap, Download, Printer, ArrowLeft, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import CertificateCard from "@/components/CertificateCard";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import { toast } from "sonner";
+
+interface MyCert {
+  id: string;
+  credential_id: string;
+  student_name: string;
+  issued_at: string;
+  course_id: string | null;
+  course_title: string;
+}
 
 const Certificate = () => {
-  const studentName = "Sardor Rakhimov";
-  const date = new Date().toLocaleDateString("uz-UZ", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-  const credentialId = "ONDEV-2026-SR7X9K";
+  const { user } = useAuth();
+  const [certs, setCerts] = useState<MyCert[]>([]);
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase
+        .from("certificates")
+        .select("id, credential_id, student_name, issued_at, course_id")
+        .eq("user_id", user.id)
+        .order("issued_at", { ascending: false });
+
+      if (!data?.length) {
+        setCerts([]);
+        setLoading(false);
+        return;
+      }
+
+      const courseIds = [...new Set(data.map((c) => c.course_id).filter(Boolean) as string[])];
+      const { data: courses } = await supabase
+        .from("courses")
+        .select("id, title")
+        .in("id", courseIds);
+      const courseMap = new Map((courses || []).map((c) => [c.id, c.title]));
+
+      setCerts(
+        data.map((c) => ({
+          ...c,
+          course_title: (c.course_id && courseMap.get(c.course_id)) || "OnDev kursi",
+        }))
+      );
+      setLoading(false);
+    })();
+  }, [user]);
+
+  const downloadPDF = async () => {
+    if (!cardRef.current) return;
+    toast.loading("PDF tayyorlanmoqda...", { id: "pdf" });
+    try {
+      const canvas = await html2canvas(cardRef.current, { scale: 2, backgroundColor: "#ffffff" });
+      const img = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      pdf.addImage(img, "PNG", 0, (pdf.internal.pageSize.getHeight() - pdfHeight) / 2, pdfWidth, pdfHeight);
+      pdf.save(`ondev-sertifikat-${certs[activeIdx].credential_id}.pdf`);
+      toast.success("PDF yuklandi", { id: "pdf" });
+    } catch {
+      toast.error("PDF yaratishda xatolik", { id: "pdf" });
+    }
+  };
+
+  const active = certs[activeIdx];
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Header */}
       <header className="border-b border-border bg-background/80 backdrop-blur-md">
         <div className="container flex items-center justify-between h-14 px-4">
           <Link to="/" className="flex items-center gap-2">
@@ -33,80 +97,67 @@ const Certificate = () => {
       </header>
 
       <div className="container px-4 py-10 flex flex-col items-center">
-        {/* Certificate Card */}
-        <div className="w-full max-w-3xl aspect-[1.414/1] rounded-xl overflow-hidden shadow-2xl border-2 border-primary/20 bg-gradient-to-br from-[hsl(220,14%,96%)] to-[hsl(220,14%,88%)]">
-          <div className="w-full h-full flex flex-col items-center justify-center p-8 md:p-14 text-center relative">
-            {/* Decorative borders */}
-            <div className="absolute inset-4 border-2 border-[hsl(220,12%,75%)] rounded-lg pointer-events-none" />
-            <div className="absolute inset-6 border border-[hsl(220,12%,82%)] rounded-lg pointer-events-none" />
-
-            {/* Logo */}
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-10 h-10 rounded-lg bg-[hsl(160,84%,39%)] flex items-center justify-center">
-                <GraduationCap className="w-6 h-6 text-white" />
-              </div>
-              <span className="font-bold text-xl text-[hsl(220,14%,20%)]">
-                on<span className="text-[hsl(160,84%,39%)]">dev</span>.uz
-              </span>
-            </div>
-
-            <h1 className="text-3xl md:text-4xl font-bold text-[hsl(220,14%,15%)] tracking-tight mb-2">
-              Yakunlash sertifikati
-            </h1>
-            <div className="w-24 h-0.5 bg-[hsl(160,84%,39%)] mx-auto mb-6" />
-
-            <p className="text-sm text-[hsl(220,14%,40%)] mb-2">Ushbu sertifikat tasdiqlaydiki</p>
-            <h2 className="text-2xl md:text-3xl font-bold text-[hsl(220,14%,10%)] mb-2 font-serif italic">
-              {studentName}
-            </h2>
-            <p className="text-sm text-[hsl(220,14%,40%)] max-w-md mb-8 leading-relaxed">
-              ondev.uz platformasida <strong className="text-[hsl(220,14%,15%)]">9 oylik Python & Django Backend Dasturlash Dasturi</strong>ni muvaffaqiyatli yakunladi
+        {loading ? (
+          <p className="text-muted-foreground">Yuklanmoqda...</p>
+        ) : certs.length === 0 ? (
+          <div className="glass-card p-10 max-w-md w-full text-center">
+            <Award className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+            <h1 className="text-xl font-bold mb-2">Hali sertifikat yo'q</h1>
+            <p className="text-sm text-muted-foreground mb-4">
+              Kursni to'liq tugatganingizda sizga avtomatik sertifikat beriladi.
             </p>
-
-            <div className="flex flex-col sm:flex-row items-center gap-6 mb-6">
-              <div className="text-center">
-                <p className="text-xs text-[hsl(220,14%,50%)] uppercase tracking-widest mb-1">Sana</p>
-                <p className="font-semibold text-[hsl(220,14%,15%)]">{date}</p>
-              </div>
-              <div className="hidden sm:block w-px h-8 bg-[hsl(220,12%,75%)]" />
-              <div className="text-center">
-                <p className="text-xs text-[hsl(220,14%,50%)] uppercase tracking-widest mb-1">Sertifikat ID</p>
-                <p className="font-mono text-sm font-semibold text-[hsl(220,14%,15%)]">{credentialId}</p>
-              </div>
-            </div>
-
-            {/* Mock QR code */}
-            <div className="w-16 h-16 rounded bg-[hsl(220,14%,15%)] grid grid-cols-4 grid-rows-4 gap-px p-1">
-              {Array.from({ length: 16 }).map((_, i) => (
-                <div
-                  key={i}
-                  className={`rounded-sm ${
-                    [0, 1, 3, 4, 5, 7, 8, 11, 12, 14, 15].includes(i)
-                      ? "bg-white"
-                      : "bg-transparent"
-                  }`}
-                />
-              ))}
-            </div>
-            <p className="text-[10px] text-[hsl(220,14%,50%)] mt-1">Tekshirish uchun skanerlang</p>
+            <Button asChild>
+              <Link to="/dashboard">Darslarga qaytish</Link>
+            </Button>
           </div>
-        </div>
+        ) : (
+          <>
+            {certs.length > 1 && (
+              <div className="flex flex-wrap gap-2 mb-6">
+                {certs.map((c, i) => (
+                  <button
+                    key={c.id}
+                    onClick={() => setActiveIdx(i)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                      i === activeIdx
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "border-border text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {c.course_title}
+                  </button>
+                ))}
+              </div>
+            )}
 
-        {/* Action buttons */}
-        <div className="flex gap-3 mt-8">
-          <Button className="gap-2" onClick={() => window.print()}>
-            <Download className="w-4 h-4" /> PDF yuklab olish
-          </Button>
-          <Button variant="outline" className="gap-2" asChild>
-            <a
-              href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent("https://ondev.uz/certificate/" + credentialId)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Linkedin className="w-4 h-4" /> LinkedIn da ulashish
-            </a>
-          </Button>
-        </div>
+            <CertificateCard
+              ref={cardRef}
+              studentName={active.student_name}
+              courseTitle={active.course_title}
+              date={new Date(active.issued_at).toLocaleDateString("uz-UZ", {
+                year: "numeric", month: "long", day: "numeric",
+              })}
+              credentialId={active.credential_id}
+            />
+
+            <div className="flex flex-wrap justify-center gap-3 mt-8">
+              <Button className="gap-2" onClick={downloadPDF}>
+                <Download className="w-4 h-4" /> PDF yuklab olish
+              </Button>
+              <Button variant="outline" className="gap-2" onClick={() => window.print()}>
+                <Printer className="w-4 h-4" /> Chop etish
+              </Button>
+              <Button variant="outline" className="gap-2" asChild>
+                <Link to={`/certificate/${active.credential_id}`} target="_blank">
+                  Tekshirish sahifasi
+                </Link>
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-4 text-center">
+              Sertifikat ID: <span className="font-mono">{active.credential_id}</span>
+            </p>
+          </>
+        )}
       </div>
     </div>
   );
