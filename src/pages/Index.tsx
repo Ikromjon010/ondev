@@ -143,16 +143,17 @@ const Index = () => {
             className="max-w-3xl mx-auto text-center"
           >
             <span className="inline-block px-3 py-1 mb-6 rounded-full text-xs font-semibold bg-primary/15 text-primary border border-primary/20">
-              🚀 Bepul boshlang — karta talab qilinmaydi
+              Birinchi oy — bepul
             </span>
             <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-6">
-              Brauzerda{" "}
-              <span className="text-primary">dasturlash</span>{" "}
-              o'rganing
+              Kod yozib{" "}
+              <span className="text-primary">o'rganasiz</span>,
+              <br className="hidden md:block" />
+              eslab qolmaysiz
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
-              Backend, Frontend, Mobile va boshqa yo'nalishlardagi interaktiv kurslar.
-              Nazariya, video, amaliy vazifalar va real loyihalar — hammasi bitta platformada.
+              Har bir dars — qisqa video, vazifa va brauzerdagi kod muharriri.
+              Backend, Frontend va boshqa yo'nalishlar — bosqichma-bosqich, o'zbek tilida.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button size="lg" className="text-base gap-2" asChild>
