@@ -84,6 +84,7 @@ const LessonView = () => {
             .eq("id", modData.course_id)
             .single();
           courseLanguage = courseData?.language || "python";
+          setCourseId(modData.course_id);
         }
       }
 
