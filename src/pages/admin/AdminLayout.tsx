@@ -1,5 +1,5 @@
 import { Link, useLocation, Outlet } from "react-router-dom";
-import { GraduationCap, Users, BookOpen, CreditCard, Trophy, LayoutDashboard, LogOut } from "lucide-react";
+import { GraduationCap, Users, BookOpen, CreditCard, Trophy, LayoutDashboard, LogOut, Award } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 
@@ -9,6 +9,7 @@ const navItems = [
   { to: "/admin/content", label: "Kurs kontenti", icon: BookOpen },
   { to: "/admin/payments", label: "To'lovlar", icon: CreditCard },
   { to: "/admin/leaderboard", label: "Reyting", icon: Trophy },
+  { to: "/admin/certificates", label: "Sertifikatlar", icon: Award },
 ];
 
 const AdminLayout = () => {

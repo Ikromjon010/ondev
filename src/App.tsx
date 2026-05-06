@@ -26,6 +26,7 @@ import AdminUsers from "./pages/admin/AdminUsers";
 import AdminContent from "./pages/admin/AdminContent";
 import AdminPayments from "./pages/admin/AdminPayments";
 import AdminLeaderboard from "./pages/admin/AdminLeaderboard";
+import AdminCertificates from "./pages/admin/AdminCertificates";
 
 const queryClient = new QueryClient();
 
@@ -57,6 +58,7 @@ const App = () => (
               <Route path="content" element={<AdminContent />} />
               <Route path="payments" element={<AdminPayments />} />
               <Route path="leaderboard" element={<AdminLeaderboard />} />
+              <Route path="certificates" element={<AdminCertificates />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
