@@ -255,30 +255,31 @@ const LessonView = () => {
         onClose={closeCelebration}
       />
 
-      <div className="border-b border-border bg-card/50">
-        <div className="container px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link to="/syllabus" className="text-muted-foreground hover:text-foreground transition-colors">
+      <div className="border-b border-border bg-card/50 sticky top-0 z-30 backdrop-blur">
+        <div className="container px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+            <Link to="/syllabus" className="text-muted-foreground hover:text-foreground transition-colors shrink-0">
               <ArrowLeft className="w-4 h-4" />
             </Link>
-            <div>
-              <p className="text-xs text-muted-foreground">{totalLessons} dan {lesson?.sort_order || lessonId}-dars</p>
-              <h1 className="font-semibold text-foreground">{lessonTitle}</h1>
+            <div className="min-w-0">
+              <p className="text-[10px] sm:text-xs text-muted-foreground">{totalLessons} dan {lesson?.sort_order || lessonId}-dars</p>
+              <h1 className="font-semibold text-sm sm:text-base text-foreground truncate">{lessonTitle}</h1>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             {tabs.map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                aria-label={tab.label}
+                className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                   activeTab === tab.key
                     ? "bg-accent/10 text-accent"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <tab.icon className="w-4 h-4" />
-                {tab.label}
+                <span className="hidden md:inline">{tab.label}</span>
               </button>
             ))}
           </div>
