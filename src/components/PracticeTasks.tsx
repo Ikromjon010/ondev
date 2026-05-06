@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
-import { Terminal, CheckCircle2, ArrowRight } from "lucide-react";
+import { Terminal, CheckCircle2, ArrowRight, Code2, Eye } from "lucide-react";
 import Editor from "@monaco-editor/react";
 import { Link } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PracticeTasksProps {
   contentMd: string | null;
@@ -63,13 +64,14 @@ const PracticeTasks = ({
   onRun,
   onSubmit,
 }: PracticeTasksProps) => {
+  const isMobile = useIsMobile();
   const tasks = useMemo(() => parseTasksFromMarkdown(contentMd), [contentMd]);
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
   const [taskCodes, setTaskCodes] = useState<Record<number, string>>({});
+  const [mobileView, setMobileView] = useState<"code" | "output">("code");
 
   const hasTasks = tasks.length > 0;
   const currentTask = hasTasks ? tasks[currentTaskIndex] : null;
-  // Show saved code if task was completed, otherwise show user's draft or starter code
   const currentCode = taskCodes[currentTaskIndex] ?? savedTaskCodes[currentTaskIndex] ?? currentTask?.code ?? starterCode ?? "# Kodingizni shu yerga yozing\n";
   const allTasksCompleted = hasTasks && completedTasks.size >= tasks.length;
   const isCurrentCompleted = completedTasks.has(currentTaskIndex);
@@ -82,13 +84,208 @@ const PracticeTasks = ({
   const handleSubmitTask = () => {
     const desc = currentTask?.description || "Topshiriqni bajaring";
     onSubmit(currentCode, currentTaskIndex, tasks.length, desc);
+    if (isMobile) setMobileView("output");
   };
 
+  const handleRunCode = () => {
+    onRun(currentCode);
+    if (isMobile) setMobileView("output");
+  };
+
+  const editorBlock = (
+    <div className="glass-card flex flex-col flex-1 min-h-0 overflow-hidden">
+      <div className="flex items-center justify-between px-3 sm:px-4 py-2 border-b border-border">
+        <div className="flex items-center gap-2 min-w-0">
+          <Terminal className="w-4 h-4 text-accent shrink-0" />
+          <span className="text-xs sm:text-sm font-medium text-foreground truncate">solution.py</span>
+        </div>
+        <div className="hidden sm:flex items-center gap-2">
+          <button
+            onClick={handleRunCode}
+            disabled={running}
+            className="px-3 py-1 text-xs font-medium rounded bg-secondary text-foreground hover:bg-secondary/80 transition-colors disabled:opacity-50"
+          >
+            {running ? "Ishlamoqda..." : "▶ Ishga tushirish"}
+          </button>
+          <button
+            onClick={handleSubmitTask}
+            disabled={running || isCurrentCompleted || (submitted && !hasTasks)}
+            className="px-3 py-1 text-xs font-medium rounded bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
+          >
+            {isCurrentCompleted || (submitted && !hasTasks) ? "✓ Yuborildi" : "Tekshirish"}
+          </button>
+        </div>
+      </div>
+      <div className="flex-1 min-h-0">
+        <Editor
+          height="100%"
+          defaultLanguage="python"
+          value={currentCode}
+          onChange={handleCodeChange}
+          theme="vs-dark"
+          options={{
+            minimap: { enabled: false },
+            fontSize: isMobile ? 13 : 14,
+            fontFamily: "'JetBrains Mono', monospace",
+            padding: { top: 12 },
+            scrollBeyondLastLine: false,
+            lineNumbers: isMobile ? "off" : "on",
+            renderLineHighlight: "line",
+            automaticLayout: true,
+            wordWrap: isMobile ? "on" : "off",
+            folding: !isMobile,
+            glyphMargin: false,
+            lineDecorationsWidth: isMobile ? 4 : 10,
+            lineNumbersMinChars: isMobile ? 0 : 3,
+            scrollbar: {
+              verticalScrollbarSize: isMobile ? 6 : 10,
+              horizontalScrollbarSize: isMobile ? 6 : 10,
+            },
+            quickSuggestions: !isMobile,
+          }}
+        />
+      </div>
+    </div>
+  );
+
+  const outputBlock = (
+    <div className="glass-card flex flex-col flex-1 min-h-0 overflow-hidden">
+      <div className="flex items-center gap-2 px-3 sm:px-4 py-2 border-b border-border">
+        <Terminal className="w-4 h-4 text-primary" />
+        <span className="text-xs sm:text-sm font-medium text-foreground">Natija</span>
+      </div>
+      <div className="flex-1 p-3 sm:p-4 font-mono text-xs sm:text-sm overflow-auto">
+        {output ? (
+          <pre className="text-foreground whitespace-pre-wrap break-words">{output}</pre>
+        ) : (
+          <p className="text-muted-foreground italic">
+            Natijani ko'rish uchun kodingizni ishga tushiring...
+          </p>
+        )}
+      </div>
+    </div>
+  );
+
+  const nextActionBlock = (
+    <div className="glass-card p-3 sm:p-4">
+      {isCurrentCompleted && !isLastTask && (
+        <button
+          onClick={() => {
+            setCurrentTaskIndex((i) => i + 1);
+            if (isMobile) setMobileView("code");
+          }}
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg font-medium text-sm bg-accent text-accent-foreground hover:bg-accent/90 transition-all"
+        >
+          Keyingi topshiriq
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      )}
+      {(allTasksCompleted || (submitted && !hasTasks)) && (
+        <Link
+          to={`/lesson/${lessonId + 1}?tab=video`}
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg font-medium text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-all glow-success"
+        >
+          <CheckCircle2 className="w-4 h-4" />
+          Keyingi dars
+          <ArrowRight className="w-4 h-4" />
+        </Link>
+      )}
+      {!allTasksCompleted && !submitted && (
+        <div className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg font-medium text-sm bg-secondary text-muted-foreground cursor-not-allowed">
+          {hasTasks
+            ? `Bajaring (${completedTasks.size}/${tasks.length})`
+            : "Keyingi darsni ochish uchun kodni yuboring"}
+        </div>
+      )}
+    </div>
+  );
+
+  // ===== Mobile layout =====
+  if (isMobile) {
+    return (
+      <div className="flex flex-col gap-3 h-[calc(100vh-180px)] pb-20">
+        {/* Task tabs — horizontal scroll */}
+        {hasTasks && (
+          <div className="flex items-center gap-2 overflow-x-auto -mx-3 px-3 pb-1 scrollbar-none">
+            {tasks.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrentTaskIndex(i)}
+                className={`shrink-0 px-3 py-1.5 rounded-md text-xs font-medium border transition-all ${
+                  completedTasks.has(i)
+                    ? "border-primary/40 bg-primary/10 text-primary"
+                    : i === currentTaskIndex
+                    ? "border-accent bg-accent/10 text-accent"
+                    : "border-border bg-card text-muted-foreground"
+                }`}
+              >
+                {completedTasks.has(i) && <span className="mr-1">✓</span>}
+                #{i + 1}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Code/Output toggle */}
+        <div className="flex items-center gap-1 p-1 rounded-lg bg-card border border-border">
+          <button
+            onClick={() => setMobileView("code")}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
+              mobileView === "code" ? "bg-accent/15 text-accent" : "text-muted-foreground"
+            }`}
+          >
+            <Code2 className="w-3.5 h-3.5" /> Kod
+          </button>
+          <button
+            onClick={() => setMobileView("output")}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
+              mobileView === "output" ? "bg-accent/15 text-accent" : "text-muted-foreground"
+            }`}
+          >
+            <Eye className="w-3.5 h-3.5" /> Natija
+          </button>
+        </div>
+
+        {/* Task description (collapsible-ish) */}
+        {hasTasks && currentTask?.description && mobileView === "code" && (
+          <details className="glass-card text-xs text-muted-foreground leading-relaxed">
+            <summary className="px-3 py-2 cursor-pointer font-medium text-foreground">
+              📋 Topshiriq matni
+            </summary>
+            <div className="px-3 pb-3 whitespace-pre-wrap">{currentTask.description}</div>
+          </details>
+        )}
+
+        {/* Active panel */}
+        {mobileView === "code" ? editorBlock : outputBlock}
+
+        {nextActionBlock}
+
+        {/* Sticky action bar (mobile) */}
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur border-t border-border p-2 flex gap-2">
+          <button
+            onClick={handleRunCode}
+            disabled={running}
+            className="flex-1 py-2.5 text-sm font-medium rounded-lg bg-secondary text-foreground disabled:opacity-50"
+          >
+            {running ? "..." : "▶ Ishga tushirish"}
+          </button>
+          <button
+            onClick={handleSubmitTask}
+            disabled={running || isCurrentCompleted || (submitted && !hasTasks)}
+            className="flex-1 py-2.5 text-sm font-medium rounded-lg bg-primary text-primary-foreground disabled:opacity-50"
+          >
+            {isCurrentCompleted || (submitted && !hasTasks) ? "✓ Yuborildi" : "Yuborish"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ===== Desktop layout =====
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4 h-[calc(100vh-180px)]">
-      {/* Left: Tabs + Description + Editor */}
       <div className="flex flex-col gap-3 min-h-0">
-        {/* Task tabs */}
         {hasTasks && (
           <div className="flex items-center gap-2 flex-wrap">
             {tasks.map((_, i) => (
@@ -110,106 +307,18 @@ const PracticeTasks = ({
           </div>
         )}
 
-        {/* Task description */}
         {hasTasks && currentTask?.description && (
           <div className="glass-card p-4 text-sm text-muted-foreground leading-relaxed max-h-36 overflow-auto whitespace-pre-wrap">
             {currentTask.description}
           </div>
         )}
 
-        {/* Editor */}
-        <div className="glass-card flex flex-col flex-1 min-h-0 overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-2 border-b border-border">
-            <div className="flex items-center gap-2">
-              <Terminal className="w-4 h-4 text-accent" />
-              <span className="text-sm font-medium text-foreground">solution.py</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => onRun(currentCode)}
-                disabled={running}
-                className="px-3 py-1 text-xs font-medium rounded bg-secondary text-foreground hover:bg-secondary/80 transition-colors disabled:opacity-50"
-              >
-                {running ? "Ishlamoqda..." : "▶ Ishga tushirish"}
-              </button>
-              <button
-                onClick={handleSubmitTask}
-                disabled={running || isCurrentCompleted || (submitted && !hasTasks)}
-                className="px-3 py-1 text-xs font-medium rounded bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
-              >
-                {isCurrentCompleted || (submitted && !hasTasks) ? "✓ Yuborildi" : "Tekshirish uchun yuborish"}
-              </button>
-            </div>
-          </div>
-          <div className="flex-1 min-h-0">
-            <Editor
-              height="100%"
-              defaultLanguage="python"
-              value={currentCode}
-              onChange={handleCodeChange}
-              theme="vs-dark"
-              options={{
-                minimap: { enabled: false },
-                fontSize: 14,
-                fontFamily: "'JetBrains Mono', monospace",
-                padding: { top: 12 },
-                scrollBeyondLastLine: false,
-                lineNumbers: "on",
-                renderLineHighlight: "line",
-                automaticLayout: true,
-              }}
-            />
-          </div>
-        </div>
+        {editorBlock}
       </div>
 
-      {/* Right: Output + Next action */}
       <div className="flex flex-col gap-3 min-h-0">
-        <div className="glass-card flex flex-col flex-1 min-h-0 overflow-hidden">
-          <div className="flex items-center gap-2 px-4 py-2 border-b border-border">
-            <Terminal className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-foreground">Natija</span>
-          </div>
-          <div className="flex-1 p-4 font-mono text-sm overflow-auto">
-            {output ? (
-              <pre className="text-foreground whitespace-pre-wrap">{output}</pre>
-            ) : (
-              <p className="text-muted-foreground italic">
-                Natijani ko'rish uchun kodingizni ishga tushiring...
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Next action */}
-        <div className="glass-card p-4">
-          {isCurrentCompleted && !isLastTask && (
-            <button
-              onClick={() => setCurrentTaskIndex((i) => i + 1)}
-              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg font-medium text-sm bg-accent text-accent-foreground hover:bg-accent/90 transition-all"
-            >
-              Keyingi topshiriq
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          )}
-          {(allTasksCompleted || (submitted && !hasTasks)) && (
-            <Link
-              to={`/lesson/${lessonId + 1}?tab=video`}
-              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg font-medium text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-all glow-success"
-            >
-              <CheckCircle2 className="w-4 h-4" />
-              Keyingi dars
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          )}
-          {!allTasksCompleted && !submitted && (
-            <div className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg font-medium text-sm bg-secondary text-muted-foreground cursor-not-allowed">
-              {hasTasks
-                ? `Barcha topshiriqlarni bajaring (${completedTasks.size}/${tasks.length})`
-                : "Keyingi darsni ochish uchun kodni yuboring"}
-            </div>
-          )}
-        </div>
+        {outputBlock}
+        {nextActionBlock}
       </div>
     </div>
   );
