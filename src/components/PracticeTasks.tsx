@@ -206,7 +206,7 @@ const PracticeTasks = ({
       <div className="flex flex-col gap-3 h-[calc(100vh-180px)] pb-20">
         {/* Task tabs — horizontal scroll */}
         {hasTasks && (
-          <div className="flex items-center gap-2 overflow-x-auto -mx-3 px-3 pb-1 scrollbar-none">
+          <div className="flex items-center gap-2 overflow-x-auto -mx-3 px-3 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {tasks.map((_, i) => (
               <button
                 key={i}
