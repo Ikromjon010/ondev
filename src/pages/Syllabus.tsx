@@ -42,6 +42,7 @@ const tierConfig: Record<string, { name: string; months: string; badge: string }
 };
 
 const Syllabus = () => {
+  const { isAdmin } = useAuth();
   const { courses } = useCourses({ onlyPublished: true });
   const { getTier } = useUserCourseAccess();
   const [selectedSlug, setSelectedSlug] = useState<string>(getActiveCourseSlug());
@@ -228,12 +229,12 @@ const Syllabus = () => {
                                     const allSorted = lessons.sort((a, b) => a.sort_order - b.sort_order);
                                     const globalIndex = allSorted.findIndex((l) => l.id === lesson.id);
                                     const prev = globalIndex > 0 ? allSorted[globalIndex - 1] : null;
-                                    const sequenceUnlocked = isCompleted || globalIndex === 0 || (prev ? completedLessons.has(prev.id) : false);
+                                    const sequenceUnlocked = isAdmin || isCompleted || globalIndex === 0 || (prev ? completedLessons.has(prev.id) : false);
 
                                     const tierOrder = ["free", "intermediate", "advanced"];
                                     const userIdx = tierOrder.indexOf(courseTier);
                                     const lessonIdx = tierOrder.indexOf(mod.tier === "basic" ? "free" : mod.tier);
-                                    const hasTierAccess = userIdx >= lessonIdx;
+                                    const hasTierAccess = isAdmin || userIdx >= lessonIdx;
                                     const isUnlocked = sequenceUnlocked && hasTierAccess;
 
                                     return (
