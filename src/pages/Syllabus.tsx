@@ -42,6 +42,7 @@ const tierConfig: Record<string, { name: string; months: string; badge: string }
 };
 
 const Syllabus = () => {
+  const { isAdmin } = useAuth();
   const { courses } = useCourses({ onlyPublished: true });
   const { getTier } = useUserCourseAccess();
   const [selectedSlug, setSelectedSlug] = useState<string>(getActiveCourseSlug());
