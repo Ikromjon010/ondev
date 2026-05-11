@@ -119,7 +119,7 @@ const LessonView = () => {
       setLoading(false);
     };
     fetchLesson();
-  }, [lessonId]);
+  }, [lessonId, isAdmin, user?.id]);
 
   // Check completion status separately (depends on user)
   useEffect(() => {
